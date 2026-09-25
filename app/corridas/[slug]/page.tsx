@@ -6,7 +6,10 @@ import {
   drivers,
   getRaceBySlug,
   recentResults,
+  type QualifyingClassification,
+  type RaceClassification,
 } from "../../data/f1-data";
+import { getRaceDetails } from "../../lib/f1-api";
 
 type RacePageProps = {
   params: Promise<{ slug: string }>;
@@ -38,12 +41,13 @@ export async function generateMetadata({
 
 export default async function RacePage({ params }: RacePageProps) {
   const { slug } = await params;
-  const race = getRaceBySlug(slug);
+  const details = await getRaceDetails(slug);
 
-  if (!race) {
+  if (!details) {
     notFound();
   }
 
+  const { race } = details;
   const winningConstructor = constructors.find(
     (constructor) => constructor.name === race.winningTeam,
   );
@@ -88,6 +92,10 @@ export default async function RacePage({ params }: RacePageProps) {
               </p>
               <p className="mt-3 text-4xl font-black">{race.winner}</p>
               <p className="mt-2 text-white/62">{race.winningTeam}</p>
+              <p className="mt-4 inline-flex rounded bg-white/10 px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-white/62">
+                {details.source === "api" ? "Ao vivo via" : "Fallback"}{" "}
+                {details.sourceLabel}
+              </p>
               {winningConstructor ? (
                 <Link
                   className="mt-5 inline-flex rounded bg-white px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#151515] transition hover:bg-[#ffcc00]"
@@ -129,6 +137,24 @@ export default async function RacePage({ params }: RacePageProps) {
               ))}
             </div>
           </div>
+
+          {details.raceResults.length > 0 ? (
+            <ClassificationTable
+              results={details.raceResults}
+              title="Resultado da corrida"
+            />
+          ) : null}
+
+          {details.qualifyingResults.length > 0 ? (
+            <QualifyingTable results={details.qualifyingResults} />
+          ) : null}
+
+          {details.sprintResults.length > 0 ? (
+            <ClassificationTable
+              results={details.sprintResults}
+              title="Resultado da sprint"
+            />
+          ) : null}
         </div>
 
         <aside className="grid content-start gap-6">
@@ -143,6 +169,29 @@ export default async function RacePage({ params }: RacePageProps) {
               <InfoRow label="Volta rapida" value={race.fastestLap} />
             </dl>
           </div>
+
+          {details.scheduleSessions.length > 0 ? (
+            <div className="rounded border border-black/10 bg-white p-5">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+                Horarios
+              </p>
+              <h2 className="mt-2 text-3xl font-black">Fim de semana</h2>
+              <div className="mt-5 grid gap-3">
+                {details.scheduleSessions.map((session) => (
+                  <div
+                    className="rounded bg-[#f5f2ec] p-4"
+                    key={`${session.label}-${session.date}`}
+                  >
+                    <p className="font-black">{session.label}</p>
+                    <p className="mt-1 text-sm font-bold text-black/55">
+                      {session.date}
+                      {session.time ? ` / ${session.time}` : ""}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="rounded border border-black/10 bg-white p-5">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
@@ -176,6 +225,96 @@ export default async function RacePage({ params }: RacePageProps) {
         </aside>
       </section>
     </main>
+  );
+}
+
+function ClassificationTable({
+  results,
+  title,
+}: {
+  results: RaceClassification[];
+  title: string;
+}) {
+  return (
+    <div className="rounded border border-black/10 bg-white p-5">
+      <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+        Classificacao
+      </p>
+      <h2 className="mt-2 text-3xl font-black">{title}</h2>
+      <div className="mt-5 overflow-x-auto">
+        <table className="w-full min-w-[680px] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-black/42">
+              <th className="py-3 pr-4">Pos</th>
+              <th className="py-3 pr-4">Piloto</th>
+              <th className="py-3 pr-4">Equipe</th>
+              <th className="py-3 pr-4">Grid</th>
+              <th className="py-3 pr-4">Status</th>
+              <th className="py-3 text-right">Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((result) => (
+              <tr className="border-b border-black/5 last:border-b-0" key={`${title}-${result.position}-${result.driver}`}>
+                <td className="py-3 pr-4 font-black">P{result.position}</td>
+                <td className="py-3 pr-4 font-bold">{result.driver}</td>
+                <td className="py-3 pr-4 text-black/58">{result.team}</td>
+                <td className="py-3 pr-4 text-black/58">
+                  {result.grid ? `P${result.grid}` : "-"}
+                </td>
+                <td className="py-3 pr-4 text-black/58">
+                  {result.time ?? result.status ?? "-"}
+                </td>
+                <td className="py-3 text-right font-black">
+                  {result.points ?? 0}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function QualifyingTable({
+  results,
+}: {
+  results: QualifyingClassification[];
+}) {
+  return (
+    <div className="rounded border border-black/10 bg-white p-5">
+      <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+        Largada
+      </p>
+      <h2 className="mt-2 text-3xl font-black">Resultado da classificacao</h2>
+      <div className="mt-5 overflow-x-auto">
+        <table className="w-full min-w-[680px] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-black/42">
+              <th className="py-3 pr-4">Pos</th>
+              <th className="py-3 pr-4">Piloto</th>
+              <th className="py-3 pr-4">Equipe</th>
+              <th className="py-3 pr-4">Q1</th>
+              <th className="py-3 pr-4">Q2</th>
+              <th className="py-3">Q3</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((result) => (
+              <tr className="border-b border-black/5 last:border-b-0" key={`quali-${result.position}-${result.driver}`}>
+                <td className="py-3 pr-4 font-black">P{result.position}</td>
+                <td className="py-3 pr-4 font-bold">{result.driver}</td>
+                <td className="py-3 pr-4 text-black/58">{result.team}</td>
+                <td className="py-3 pr-4 text-black/58">{result.q1 ?? "-"}</td>
+                <td className="py-3 pr-4 text-black/58">{result.q2 ?? "-"}</td>
+                <td className="py-3 text-black/58">{result.q3 ?? "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

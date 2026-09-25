@@ -70,9 +70,12 @@ export default async function Home() {
               <a className="rounded px-3 py-2 hover:bg-white/10" href="#equipes">
                 Equipes
               </a>
-              <a className="rounded px-3 py-2 hover:bg-white/10" href="#calendario">
+              <Link className="rounded px-3 py-2 hover:bg-white/10" href="/calendario">
                 Calendario
-              </a>
+              </Link>
+              <Link className="rounded px-3 py-2 hover:bg-white/10" href="/buscar">
+                Busca
+              </Link>
               <a className="rounded px-3 py-2 hover:bg-white/10" href="#temporada">
                 Analise
               </a>
@@ -99,12 +102,18 @@ export default async function Home() {
                 >
                   Explorar pilotos
                 </a>
-                <a
+                <Link
                   className="rounded border border-white/20 px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
-                  href="#calendario"
+                  href="/buscar"
+                >
+                  Buscar stats
+                </Link>
+                <Link
+                  className="rounded border border-white/20 px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
+                  href="/calendario"
                 >
                   Proximas corridas
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -300,6 +309,12 @@ function CalendarPanel({
           </div>
         ))}
       </div>
+      <Link
+        className="mt-5 inline-flex rounded bg-[#151515] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-[#e10600]"
+        href="/calendario"
+      >
+        Ver calendario completo
+      </Link>
     </div>
   );
 }

@@ -38,6 +38,24 @@ export type Race = {
   date: string;
   country: string;
   status: "next" | "upcoming";
+  sessions?: RaceWeekendSession[];
+};
+
+export type CalendarRace = Omit<Race, "status"> & {
+  slug?: string;
+  status: "completed" | "next" | "upcoming";
+};
+
+export type RaceWeekendSession = {
+  date: string;
+  label: string;
+  time?: string;
+  type:
+    | "practice"
+    | "qualifying"
+    | "sprint"
+    | "sprint-qualifying"
+    | "race";
 };
 
 export type RaceResult = {
@@ -52,6 +70,26 @@ export type RaceResult = {
   date: string;
   summary: string;
   sessions: RaceSessionResult[];
+};
+
+export type RaceClassification = {
+  position: number;
+  driver: string;
+  team: string;
+  grid?: number;
+  laps?: number;
+  points?: number;
+  status?: string;
+  time?: string;
+};
+
+export type QualifyingClassification = {
+  position: number;
+  driver: string;
+  team: string;
+  q1?: string;
+  q2?: string;
+  q3?: string;
 };
 
 export type SessionType = "race" | "qualifying" | "sprint";
@@ -293,6 +331,13 @@ export const upcomingRaces: Race[] = [
     circuit: "Marina Bay Street Circuit",
     date: "04 Oct",
     country: "Singapore",
+    sessions: [
+      { date: "02 Oct", label: "Treino livre 1", time: "06:30 BRT", type: "practice" },
+      { date: "02 Oct", label: "Treino livre 2", time: "10:00 BRT", type: "practice" },
+      { date: "03 Oct", label: "Treino livre 3", time: "06:30 BRT", type: "practice" },
+      { date: "03 Oct", label: "Classificacao", time: "10:00 BRT", type: "qualifying" },
+      { date: "04 Oct", label: "Corrida", time: "09:00 BRT", type: "race" },
+    ],
     status: "next",
   },
   {
@@ -301,6 +346,13 @@ export const upcomingRaces: Race[] = [
     circuit: "Circuit of The Americas",
     date: "18 Oct",
     country: "USA",
+    sessions: [
+      { date: "16 Oct", label: "Treino livre 1", time: "14:30 BRT", type: "practice" },
+      { date: "16 Oct", label: "Sprint Qualifying", time: "18:30 BRT", type: "sprint-qualifying" },
+      { date: "17 Oct", label: "Sprint", time: "14:00 BRT", type: "sprint" },
+      { date: "17 Oct", label: "Classificacao", time: "18:00 BRT", type: "qualifying" },
+      { date: "18 Oct", label: "Corrida", time: "16:00 BRT", type: "race" },
+    ],
     status: "upcoming",
   },
   {
@@ -309,6 +361,13 @@ export const upcomingRaces: Race[] = [
     circuit: "Autodromo Hermanos Rodriguez",
     date: "25 Oct",
     country: "Mexico",
+    sessions: [
+      { date: "23 Oct", label: "Treino livre 1", time: "15:30 BRT", type: "practice" },
+      { date: "23 Oct", label: "Treino livre 2", time: "19:00 BRT", type: "practice" },
+      { date: "24 Oct", label: "Treino livre 3", time: "14:30 BRT", type: "practice" },
+      { date: "24 Oct", label: "Classificacao", time: "18:00 BRT", type: "qualifying" },
+      { date: "25 Oct", label: "Corrida", time: "17:00 BRT", type: "race" },
+    ],
     status: "upcoming",
   },
 ];
