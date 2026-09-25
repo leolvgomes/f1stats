@@ -35,7 +35,11 @@ Abra [http://localhost:3000](http://localhost:3000).
 ```bash
 npx eslint app --max-warnings=0
 npm run build
+npm test
 ```
+
+Os testes de smoke usam `http://localhost:3000` por padrao. Deixe `npm run dev`
+rodando antes de executar `npm test`, ou configure `F1_STATS_BASE_URL`.
 
 ## API
 
@@ -52,6 +56,6 @@ Rotas internas:
 
 ## Proximos passos
 
-1. Adicionar testes para a camada de API.
-2. Criar loading states dedicados para as paginas com dados externos.
-3. Adicionar graficos por corrida.
+1. Adicionar testes unitarios para mapeadores da Jolpica quando um runner dedicado entrar no projeto.
+2. Adicionar graficos por corrida.
+3. Criar tela de comparacao por circuito.
