@@ -21,10 +21,14 @@ export type Driver = {
 export type Constructor = {
   position: number;
   name: string;
+  slug: string;
+  base: string;
+  teamPrincipal: string;
   points: number;
   wins: number;
   podiums: number;
   color: string;
+  summary: string;
 };
 
 export type Race = {
@@ -34,6 +38,33 @@ export type Race = {
   date: string;
   country: string;
   status: "next" | "upcoming";
+};
+
+export type RaceResult = {
+  round: number;
+  race: string;
+  winner: string;
+  winningTeam: string;
+  fastestLap: string;
+  date: string;
+};
+
+export type SeasonOption = {
+  year: string;
+  label: string;
+  racesDone: number;
+  racesTotal: number;
+  leader: string;
+  leaderPoints: number;
+  runnerUp: string;
+  runnerUpPoints: number;
+  winners: number;
+};
+
+export type PointsProgression = {
+  driver: string;
+  color: string;
+  points: number[];
 };
 
 export const drivers: Driver[] = [
@@ -187,34 +218,54 @@ export const constructors: Constructor[] = [
   {
     position: 1,
     name: "McLaren",
+    slug: "mclaren",
+    base: "Woking, United Kingdom",
+    teamPrincipal: "Andrea Stella",
     points: 666,
     wins: 6,
     podiums: 21,
     color: "#ff8700",
+    summary:
+      "Pacote mais equilibrado do grid, com dois pilotos pontuando alto e excelente eficiencia aerodinamica.",
   },
   {
     position: 2,
     name: "Ferrari",
+    slug: "ferrari",
+    base: "Maranello, Italy",
+    teamPrincipal: "Frederic Vasseur",
     points: 646,
     wins: 5,
     podiums: 21,
     color: "#e10600",
+    summary:
+      "Forte em pistas de tracao e classificacao, ainda buscando mais estabilidade em degradacao de pneus.",
   },
   {
     position: 3,
     name: "Red Bull Racing",
+    slug: "red-bull-racing",
+    base: "Milton Keynes, United Kingdom",
+    teamPrincipal: "Christian Horner",
     points: 589,
     wins: 11,
     podiums: 20,
     color: "#3671c6",
+    summary:
+      "Muito competitiva em ritmo puro, com dependencia alta dos pontos do lider do campeonato.",
   },
   {
     position: 4,
     name: "Mercedes",
+    slug: "mercedes",
+    base: "Brackley, United Kingdom",
+    teamPrincipal: "Toto Wolff",
     points: 468,
     wins: 4,
     podiums: 9,
     color: "#27f4d2",
+    summary:
+      "Evolucao constante ao longo da temporada, com boa leitura estrategica e melhoras em classificacao.",
   },
 ];
 
@@ -245,6 +296,146 @@ export const upcomingRaces: Race[] = [
   },
 ];
 
+export const recentResults: RaceResult[] = [
+  {
+    round: 17,
+    race: "Azerbaijan GP",
+    winner: "Oscar Piastri",
+    winningTeam: "McLaren",
+    fastestLap: "Lando Norris",
+    date: "20 Sep",
+  },
+  {
+    round: 16,
+    race: "Italian GP",
+    winner: "Charles Leclerc",
+    winningTeam: "Ferrari",
+    fastestLap: "Max Verstappen",
+    date: "06 Sep",
+  },
+  {
+    round: 15,
+    race: "Dutch GP",
+    winner: "Max Verstappen",
+    winningTeam: "Red Bull Racing",
+    fastestLap: "George Russell",
+    date: "30 Aug",
+  },
+  {
+    round: 14,
+    race: "Belgian GP",
+    winner: "Lewis Hamilton",
+    winningTeam: "Mercedes",
+    fastestLap: "Lewis Hamilton",
+    date: "26 Jul",
+  },
+];
+
+export const seasonOptions: SeasonOption[] = [
+  {
+    year: "2026",
+    label: "Temporada demo 2026",
+    racesDone: 17,
+    racesTotal: 24,
+    leader: "Max Verstappen",
+    leaderPoints: 437,
+    runnerUp: "Lando Norris",
+    runnerUpPoints: 374,
+    winners: 7,
+  },
+  {
+    year: "2025",
+    label: "Snapshot historico 2025",
+    racesDone: 24,
+    racesTotal: 24,
+    leader: "Lando Norris",
+    leaderPoints: 421,
+    runnerUp: "Charles Leclerc",
+    runnerUpPoints: 398,
+    winners: 8,
+  },
+  {
+    year: "2024",
+    label: "Snapshot historico 2024",
+    racesDone: 24,
+    racesTotal: 24,
+    leader: "Max Verstappen",
+    leaderPoints: 575,
+    runnerUp: "Charles Leclerc",
+    runnerUpPoints: 356,
+    winners: 7,
+  },
+];
+
+export const pointsProgressionBySeason: Record<string, PointsProgression[]> = {
+  "2026": [
+    {
+      driver: "Max Verstappen",
+      color: "#3671c6",
+      points: [25, 43, 68, 93, 118, 143, 168, 193, 218, 243, 268, 293, 318, 343, 368, 402, 437],
+    },
+    {
+      driver: "Lando Norris",
+      color: "#ff8700",
+      points: [18, 40, 55, 73, 91, 116, 141, 159, 184, 209, 234, 259, 284, 309, 334, 352, 374],
+    },
+    {
+      driver: "Charles Leclerc",
+      color: "#e10600",
+      points: [15, 30, 52, 70, 88, 106, 131, 156, 181, 199, 224, 249, 274, 299, 324, 349, 356],
+    },
+    {
+      driver: "Oscar Piastri",
+      color: "#f5b335",
+      points: [10, 22, 34, 52, 70, 88, 106, 124, 149, 174, 192, 210, 228, 246, 264, 282, 292],
+    },
+  ],
+  "2025": [
+    {
+      driver: "Lando Norris",
+      color: "#ff8700",
+      points: [18, 43, 68, 86, 111, 136, 161, 186, 211, 236, 261, 286, 311, 336, 354, 372, 390, 421],
+    },
+    {
+      driver: "Charles Leclerc",
+      color: "#e10600",
+      points: [25, 50, 68, 93, 111, 129, 147, 172, 197, 222, 240, 258, 283, 308, 333, 358, 383, 398],
+    },
+    {
+      driver: "Max Verstappen",
+      color: "#3671c6",
+      points: [15, 33, 58, 83, 108, 133, 151, 169, 194, 219, 244, 269, 287, 305, 330, 355, 373, 389],
+    },
+    {
+      driver: "Lewis Hamilton",
+      color: "#27f4d2",
+      points: [12, 27, 42, 60, 85, 100, 118, 136, 154, 172, 190, 215, 233, 251, 269, 287, 305, 329],
+    },
+  ],
+  "2024": [
+    {
+      driver: "Max Verstappen",
+      color: "#3671c6",
+      points: [25, 51, 77, 102, 127, 152, 177, 202, 227, 252, 277, 302, 327, 352, 377, 402, 427, 452, 477, 502, 527, 552, 575],
+    },
+    {
+      driver: "Charles Leclerc",
+      color: "#e10600",
+      points: [12, 30, 48, 66, 84, 102, 120, 145, 163, 181, 199, 217, 235, 253, 271, 289, 307, 325, 343, 356],
+    },
+    {
+      driver: "Lando Norris",
+      color: "#ff8700",
+      points: [8, 20, 32, 50, 68, 86, 104, 122, 147, 172, 197, 215, 233, 251, 269, 287, 305, 323, 341, 349],
+    },
+    {
+      driver: "Carlos Sainz",
+      color: "#c40000",
+      points: [10, 25, 40, 55, 70, 95, 110, 125, 140, 155, 180, 198, 216, 234, 252, 270, 288, 300],
+    },
+  ],
+};
+
 export const trendLabel: Record<DriverTrend, string> = {
   up: "Subindo",
   down: "Caindo",
@@ -261,6 +452,14 @@ export function getDriverBySlug(slug: string) {
 
 export function getDriversByTeam(team: string) {
   return drivers.filter((driver) => driver.team === team);
+}
+
+export function getConstructorBySlug(slug: string) {
+  return constructors.find((constructor) => constructor.slug === slug);
+}
+
+export function getResultsByTeam(team: string) {
+  return recentResults.filter((result) => result.winningTeam === team);
 }
 
 export function getSeasonStats() {

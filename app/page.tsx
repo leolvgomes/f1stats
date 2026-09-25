@@ -1,18 +1,24 @@
+import Link from "next/link";
 import { DriverComparison } from "./components/driver-comparison";
 import { DriverExplorer } from "./components/driver-explorer";
+import { RaceResults } from "./components/race-results";
+import { SeasonInsights } from "./components/season-insights";
 import {
   constructors,
   drivers,
   getSeasonStats,
   getTeams,
+  pointsProgressionBySeason,
+  recentResults,
+  seasonOptions,
   upcomingRaces,
 } from "./data/f1-data";
 
 const productRoadmap = [
   "Conectar standings reais por temporada",
-  "Criar pagina de detalhe por piloto",
-  "Adicionar comparador entre dois pilotos",
-  "Salvar pilotos favoritos no navegador",
+  "Criar filtros por etapa e tipo de sessao",
+  "Adicionar pagina de detalhe por corrida",
+  "Trocar mocks por fetch/cache",
 ];
 
 export default function Home() {
@@ -67,6 +73,9 @@ export default function Home() {
               <a className="rounded px-3 py-2 hover:bg-white/10" href="#calendario">
                 Calendario
               </a>
+              <a className="rounded px-3 py-2 hover:bg-white/10" href="#temporada">
+                Analise
+              </a>
             </nav>
           </header>
 
@@ -116,6 +125,11 @@ export default function Home() {
         ))}
       </section>
 
+      <SeasonInsights
+        progressionsBySeason={pointsProgressionBySeason}
+        seasons={seasonOptions}
+      />
+
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-5 pb-14 sm:px-8 lg:grid-cols-[1.3fr_0.7fr] lg:px-10">
         <DriverExplorer drivers={drivers} teams={getTeams()} />
 
@@ -147,9 +161,12 @@ export default function Home() {
             {constructors.map((constructor) => (
               <div key={constructor.name}>
                 <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                  <span className="font-black">
+                  <Link
+                    className="font-black transition hover:text-[#e10600]"
+                    href={`/equipes/${constructor.slug}`}
+                  >
                     {constructor.position}. {constructor.name}
-                  </span>
+                  </Link>
                   <span className="font-bold text-black/58">
                     {constructor.points} pts | {constructor.wins} vitorias
                   </span>
@@ -167,6 +184,10 @@ export default function Home() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8 lg:px-10">
+        <RaceResults results={recentResults} />
       </section>
     </main>
   );

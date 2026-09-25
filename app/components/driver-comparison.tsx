@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Driver } from "../data/f1-data";
 
 type DriverComparisonProps = {
@@ -8,16 +8,47 @@ type DriverComparisonProps = {
 };
 
 export function DriverComparison({ drivers }: DriverComparisonProps) {
-  const [leftSlug, setLeftSlug] = useState("lando-norris");
-  const [rightSlug, setRightSlug] = useState("charles-leclerc");
+  const [selectedSlugs, setSelectedSlugs] = useState(() => {
+    if (typeof window === "undefined") {
+      return {
+        left: "lando-norris",
+        right: "charles-leclerc",
+      };
+    }
+
+    try {
+      const savedComparison = window.localStorage.getItem(
+        "f1stats:comparison",
+      );
+
+      return savedComparison
+        ? (JSON.parse(savedComparison) as { left: string; right: string })
+        : {
+            left: "lando-norris",
+            right: "charles-leclerc",
+          };
+    } catch {
+      return {
+        left: "lando-norris",
+        right: "charles-leclerc",
+      };
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "f1stats:comparison",
+      JSON.stringify(selectedSlugs),
+    );
+  }, [selectedSlugs]);
 
   const leftDriver = useMemo(
-    () => drivers.find((driver) => driver.slug === leftSlug) ?? drivers[0],
-    [drivers, leftSlug],
+    () => drivers.find((driver) => driver.slug === selectedSlugs.left) ?? drivers[0],
+    [drivers, selectedSlugs.left],
   );
   const rightDriver = useMemo(
-    () => drivers.find((driver) => driver.slug === rightSlug) ?? drivers[1],
-    [drivers, rightSlug],
+    () => drivers.find((driver) => driver.slug === selectedSlugs.right) ?? drivers[1],
+    [drivers, selectedSlugs.right],
   );
 
   return (
@@ -31,14 +62,24 @@ export function DriverComparison({ drivers }: DriverComparisonProps) {
         <DriverSelect
           drivers={drivers}
           label="Piloto A"
-          onChange={setLeftSlug}
-          value={leftSlug}
+          onChange={(slug) =>
+            setSelectedSlugs((currentSlugs) => ({
+              ...currentSlugs,
+              left: slug,
+            }))
+          }
+          value={selectedSlugs.left}
         />
         <DriverSelect
           drivers={drivers}
           label="Piloto B"
-          onChange={setRightSlug}
-          value={rightSlug}
+          onChange={(slug) =>
+            setSelectedSlugs((currentSlugs) => ({
+              ...currentSlugs,
+              right: slug,
+            }))
+          }
+          value={selectedSlugs.right}
         />
       </div>
 

@@ -160,7 +160,16 @@ export default async function DriverPage({ params }: DriverPageProps) {
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
               Equipe
             </p>
-            <h2 className="mt-2 text-3xl font-black">{driver.team}</h2>
+            {team ? (
+              <Link
+                className="mt-2 block text-3xl font-black transition hover:text-[#e10600]"
+                href={`/equipes/${team.slug}`}
+              >
+                {driver.team}
+              </Link>
+            ) : (
+              <h2 className="mt-2 text-3xl font-black">{driver.team}</h2>
+            )}
             <div className="mt-5 h-3 rounded" style={{ backgroundColor: team?.color }} />
             <p className="mt-4 text-sm font-bold text-black/58">
               Forma atual: {trendLabel[driver.trend]}
