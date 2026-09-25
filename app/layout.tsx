@@ -12,7 +12,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className="h-full antialiased"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="f1-track-theme min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

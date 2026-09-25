@@ -139,10 +139,13 @@ export default async function RacePage({ params }: RacePageProps) {
           </div>
 
           {details.raceResults.length > 0 ? (
-            <ClassificationTable
-              results={details.raceResults}
-              title="Resultado da corrida"
-            />
+            <>
+              <RaceAnalytics results={details.raceResults} />
+              <ClassificationTable
+                results={details.raceResults}
+                title="Resultado da corrida"
+              />
+            </>
           ) : null}
 
           {details.qualifyingResults.length > 0 ? (
@@ -277,6 +280,102 @@ function ClassificationTable({
   );
 }
 
+function RaceAnalytics({ results }: { results: RaceClassification[] }) {
+  const teamPoints = getTeamPoints(results);
+  const maxTeamPoints = Math.max(...teamPoints.map((team) => team.points), 1);
+  const gridMovers = results
+    .filter((result) => typeof result.grid === "number" && result.grid > 0)
+    .map((result) => ({
+      ...result,
+      delta: (result.grid ?? result.position) - result.position,
+    }))
+    .sort((first, second) => Math.abs(second.delta) - Math.abs(first.delta))
+    .slice(0, 6);
+
+  return (
+    <div className="rounded border border-black/10 bg-white p-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+            Graficos
+          </p>
+          <h2 className="mt-2 text-3xl font-black">Leitura da corrida</h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-black/55">
+          Pontos por equipe e variacao entre largada e chegada quando a API
+          informa o grid.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-[0.16em] text-black/45">
+            Pontos por equipe
+          </h3>
+          <div className="mt-4 grid gap-3">
+            {teamPoints.map((team) => (
+              <div key={team.name}>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                  <span className="font-black">{team.name}</span>
+                  <span className="font-bold text-black/50">
+                    {team.points} pts
+                  </span>
+                </div>
+                <div className="h-4 overflow-hidden rounded bg-[#eee9df]">
+                  <div
+                    className="h-full rounded bg-[#e10600]"
+                    style={{
+                      width: `${Math.max(8, (team.points / maxTeamPoints) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-black uppercase tracking-[0.16em] text-black/45">
+            Grid vs chegada
+          </h3>
+          {gridMovers.length > 0 ? (
+            <div className="mt-4 grid gap-3">
+              {gridMovers.map((result) => (
+                <div
+                  className="grid grid-cols-[1fr_auto] items-center gap-3 rounded bg-[#f5f2ec] p-3"
+                  key={`delta-${result.driver}`}
+                >
+                  <div>
+                    <p className="font-black">{result.driver}</p>
+                    <p className="mt-1 text-xs font-bold text-black/45">
+                      Largou P{result.grid} / chegou P{result.position}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded px-3 py-2 text-sm font-black ${
+                      result.delta >= 0
+                        ? "bg-[#1f8f4d] text-white"
+                        : "bg-[#e10600] text-white"
+                    }`}
+                  >
+                    {result.delta >= 0 ? "+" : ""}
+                    {result.delta}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded bg-[#f5f2ec] p-5 text-sm font-bold leading-6 text-black/55">
+              O comparativo de grid aparece automaticamente quando a API
+              fornece as posicoes de largada.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QualifyingTable({
   results,
 }: {
@@ -348,4 +447,19 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <dd className="text-right font-black">{value}</dd>
     </div>
   );
+}
+
+function getTeamPoints(results: RaceClassification[]) {
+  const podiumFallback = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+  const pointsByTeam = new Map<string, number>();
+
+  results.forEach((result, index) => {
+    const points = result.points ?? podiumFallback[index] ?? 0;
+
+    pointsByTeam.set(result.team, (pointsByTeam.get(result.team) ?? 0) + points);
+  });
+
+  return Array.from(pointsByTeam.entries())
+    .map(([name, points]) => ({ name, points }))
+    .sort((first, second) => second.points - first.points);
 }

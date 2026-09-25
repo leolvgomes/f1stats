@@ -16,6 +16,8 @@ Dashboard em Next.js para acompanhar estatisticas de Formula 1.
 - Historico de corridas com filtro por equipe e tipo de sessao.
 - Busca global em `/buscar` para pilotos, equipes, corridas e calendario.
 - Detalhe de corrida com resultado, classificacao, sprint e horarios quando a API disponibiliza.
+- Graficos por corrida com pontos por equipe e comparativo grid vs chegada.
+- Layout claro e funcional inspirado na linguagem de resultados da F1 oficial, com topo vermelho/preto, tabelas limpas e cards objetivos.
 - Camada de API com Jolpica F1 e fallback para dados demo locais.
 - Endpoints internos em `/api/f1/dashboard`, `/api/f1/standings`, `/api/f1/schedule`, `/api/f1/search` e `/api/f1/races/[slug]`.
 - Pagina de calendario completo em `/calendario` com busca e filtros.
@@ -57,5 +59,5 @@ Rotas internas:
 ## Proximos passos
 
 1. Adicionar testes unitarios para mapeadores da Jolpica quando um runner dedicado entrar no projeto.
-2. Adicionar graficos por corrida.
-3. Criar tela de comparacao por circuito.
+2. Criar tela de comparacao por circuito.
+3. Preparar deploy.

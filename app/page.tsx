@@ -12,10 +12,10 @@ import { getDashboardData } from "./lib/f1-api";
 export const revalidate = 3600;
 
 const productRoadmap = [
-  "Expandir API para resultados e qualificacao",
-  "Criar filtros por etapa, circuito e pais",
-  "Adicionar calendario completo",
-  "Cobrir a camada de API com testes",
+  "Comparacao por circuito",
+  "Deploy de producao",
+  "Mais graficos por stint",
+  "Testes unitarios dos mapeadores",
 ];
 
 export default async function Home() {
@@ -51,19 +51,27 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f2ec] text-[#161616]">
-      <section className="border-b border-black/10 bg-[#151515] text-white">
-        <div className="mx-auto flex min-h-[92vh] w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-          <header className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="grid size-10 place-items-center rounded bg-[#e10600] font-black italic">
-                F1
-              </div>
-              <span className="text-sm font-semibold uppercase tracking-[0.24em] text-white/65">
-                Stats Center
-              </span>
+    <main className="min-h-screen bg-[#f3f3f3] text-[#15151e]">
+      <section className="f1-official-header">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-10">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded bg-white font-black italic text-[#e10600]">
+              F1
             </div>
-            <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white/70">
+            <span className="text-sm font-black uppercase tracking-[0.18em]">
+              Stats Center
+            </span>
+          </div>
+          <span className="hidden text-xs font-bold uppercase tracking-[0.16em] text-white/80 sm:inline">
+            Race data dashboard
+          </span>
+        </div>
+      </section>
+
+      <section className="bg-[#15151e] text-white">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <header className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <nav className="flex flex-wrap items-center gap-2 text-sm font-bold text-white/80">
               <a className="rounded px-3 py-2 hover:bg-white/10" href="#pilotos">
                 Pilotos
               </a>
@@ -81,35 +89,39 @@ export default async function Home() {
               </a>
             </nav>
           </header>
+        </div>
+      </section>
 
-          <div className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1.08fr_0.92fr]">
+      <section>
+        <div className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
+          <div className="f1-results-shell grid gap-8 bg-white p-5 sm:p-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="max-w-3xl">
-              <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-[#ffcc00]">
-                Temporada demo
+              <p className="mb-4 text-sm font-black uppercase tracking-[0.18em] text-[#e10600]">
+                Temporada 2026
               </p>
-              <h1 className="text-5xl font-black leading-[0.95] tracking-normal sm:text-7xl lg:text-8xl">
-                F1 Stats para acompanhar a temporada de ponta a ponta.
+              <h1 className="max-w-4xl text-5xl font-black uppercase leading-[0.92] tracking-normal sm:text-6xl lg:text-7xl">
+                Resultados, standings e calendario em um so painel.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
-                Dashboard com standings, busca por piloto, filtros por equipe,
-                calendario e comparativos. A estrutura ja esta preparada para
-                trocar os dados de exemplo por uma API.
+              <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-[#62626d]">
+                Uma interface limpa para consultar pilotos, equipes, corridas,
+                busca global e dados da temporada com fallback local quando a
+                API externa nao estiver disponivel.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  className="rounded bg-[#e10600] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-[#b80500]"
+                  className="f1-pill-active px-5 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:bg-[#b80500]"
                   href="#pilotos"
                 >
                   Explorar pilotos
                 </a>
                 <Link
-                  className="rounded border border-white/20 px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
+                  className="f1-pill px-5 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:border-[#e10600]"
                   href="/buscar"
                 >
                   Buscar stats
                 </Link>
                 <Link
-                  className="rounded border border-white/20 px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-white/10"
+                  className="f1-pill px-5 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:border-[#e10600]"
                   href="/calendario"
                 >
                   Proximas corridas
@@ -129,11 +141,11 @@ export default async function Home() {
       <section className="mx-auto grid w-full max-w-7xl gap-4 px-5 py-8 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-10">
         {quickStats.map((stat) => (
           <div className="rounded border border-black/10 bg-white p-5" key={stat.label}>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-black/45">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#62626d]">
               {stat.label}
             </p>
             <p className="mt-3 text-4xl font-black">{stat.value}</p>
-            <p className="mt-2 text-sm text-black/55">{stat.detail}</p>
+            <p className="mt-2 text-sm font-semibold text-[#62626d]">{stat.detail}</p>
           </div>
         ))}
       </section>
@@ -165,7 +177,7 @@ export default async function Home() {
               </p>
               <h2 className="mt-2 text-3xl font-black">Forca das equipes</h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-black/55">
+            <p className="max-w-xl text-sm font-semibold leading-6 text-[#62626d]">
               Barras proporcionais aos pontos para visualizar rapidamente o
               equilibrio do campeonato.
             </p>
@@ -180,11 +192,11 @@ export default async function Home() {
                   >
                     {constructor.position}. {constructor.name}
                   </Link>
-                  <span className="font-bold text-black/58">
+                  <span className="font-bold text-[#62626d]">
                     {constructor.points} pts | {constructor.wins} vitorias
                   </span>
                 </div>
-                <div className="h-4 overflow-hidden rounded bg-[#eee9df]">
+                <div className="h-4 overflow-hidden rounded bg-[#ededed]">
                   <div
                     className="h-full rounded"
                     style={{
@@ -221,21 +233,21 @@ function HeroLeaderCard({
   const leader = drivers[0];
 
   return (
-    <div className="relative overflow-hidden rounded border border-white/12 bg-white/[0.06] p-5 shadow-2xl shadow-black/30">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#e10600] via-[#ffcc00] to-[#27f4d2]" />
+    <div className="relative overflow-hidden rounded border border-black/10 bg-[#f8f8f8] p-5">
+      <div className="absolute inset-x-0 top-0 h-2 bg-[#e10600]" />
       <div className="flex items-start justify-between gap-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">
-            Lider
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#e10600]">
+            Leader
           </p>
-          <h2 className="mt-3 text-4xl font-black">{leader.name}</h2>
-          <p className="mt-2 text-white/62">{leader.team}</p>
-          <p className="mt-4 inline-flex rounded bg-white/10 px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-white/62">
+          <h2 className="mt-3 text-4xl font-black uppercase">{leader.name}</h2>
+          <p className="mt-2 font-semibold text-[#62626d]">{leader.team}</p>
+          <p className="mt-4 inline-flex rounded bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#62626d]">
             {dataSource === "api" ? "Ao vivo via" : "Fallback"} {sourceLabel}
           </p>
         </div>
-        <div className="rounded bg-white px-4 py-3 text-right text-[#161616]">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/45">
+        <div className="rounded bg-[#15151e] px-4 py-3 text-right text-white">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">
             Pts
           </p>
           <p className="text-3xl font-black">{leader.points}</p>
@@ -247,7 +259,7 @@ function HeroLeaderCard({
         <Metric label="Podios" value={leader.podiums.toString()} />
       </div>
 
-      <div className="mt-8 h-56 rounded bg-[#242424] p-5">
+      <div className="mt-8 h-56 rounded bg-white p-5">
         <div className="flex h-full items-end gap-3">
           {drivers.slice(0, 6).map((driver) => (
             <div className="flex flex-1 flex-col items-center gap-3" key={driver.slug}>
@@ -257,7 +269,7 @@ function HeroLeaderCard({
                   height: `${Math.max(28, (driver.points / leader.points) * 100)}%`,
                 }}
               />
-              <span className="text-xs font-bold text-white/60">
+              <span className="text-xs font-bold text-[#62626d]">
                 {driver.country}
               </span>
             </div>
@@ -270,8 +282,8 @@ function HeroLeaderCard({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded bg-white/10 p-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+    <div className="rounded bg-white p-4">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#62626d]">
         {label}
       </p>
       <p className="mt-2 text-3xl font-black">{value}</p>
