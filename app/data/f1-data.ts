@@ -42,11 +42,28 @@ export type Race = {
 
 export type RaceResult = {
   round: number;
+  slug: string;
   race: string;
+  circuit: string;
+  country: string;
   winner: string;
   winningTeam: string;
   fastestLap: string;
   date: string;
+  summary: string;
+  sessions: RaceSessionResult[];
+};
+
+export type SessionType = "race" | "qualifying" | "sprint";
+
+export type RaceSessionResult = {
+  type: SessionType;
+  label: string;
+  winner: string;
+  team: string;
+  second: string;
+  third: string;
+  note: string;
 };
 
 export type SeasonOption = {
@@ -299,35 +316,144 @@ export const upcomingRaces: Race[] = [
 export const recentResults: RaceResult[] = [
   {
     round: 17,
+    slug: "azerbaijan-gp",
     race: "Azerbaijan GP",
+    circuit: "Baku City Circuit",
+    country: "Azerbaijan",
     winner: "Oscar Piastri",
     winningTeam: "McLaren",
     fastestLap: "Lando Norris",
     date: "20 Sep",
+    summary:
+      "Corrida urbana marcada por safety car tardio, boa execucao da McLaren e pressao constante da Ferrari.",
+    sessions: [
+      {
+        type: "race",
+        label: "Corrida",
+        winner: "Oscar Piastri",
+        team: "McLaren",
+        second: "Charles Leclerc",
+        third: "Max Verstappen",
+        note: "Piastri controlou relargadas e converteu ritmo limpo em vitoria.",
+      },
+      {
+        type: "qualifying",
+        label: "Classificacao",
+        winner: "Charles Leclerc",
+        team: "Ferrari",
+        second: "Oscar Piastri",
+        third: "Max Verstappen",
+        note: "Leclerc aproveitou aquecimento rapido dos pneus no setor final.",
+      },
+    ],
   },
   {
     round: 16,
+    slug: "italian-gp",
     race: "Italian GP",
+    circuit: "Autodromo Nazionale Monza",
+    country: "Italy",
     winner: "Charles Leclerc",
     winningTeam: "Ferrari",
     fastestLap: "Max Verstappen",
     date: "06 Sep",
+    summary:
+      "Monza teve stint longo decisivo da Ferrari e diferenca pequena entre os quatro primeiros.",
+    sessions: [
+      {
+        type: "race",
+        label: "Corrida",
+        winner: "Charles Leclerc",
+        team: "Ferrari",
+        second: "Lando Norris",
+        third: "Carlos Sainz",
+        note: "Leclerc segurou Norris no ar limpo depois da janela de pit stops.",
+      },
+      {
+        type: "qualifying",
+        label: "Classificacao",
+        winner: "Max Verstappen",
+        team: "Red Bull Racing",
+        second: "Charles Leclerc",
+        third: "Lando Norris",
+        note: "Verstappen fez a pole por margem minima no segundo setor.",
+      },
+    ],
   },
   {
     round: 15,
+    slug: "dutch-gp",
     race: "Dutch GP",
+    circuit: "Circuit Zandvoort",
+    country: "Netherlands",
     winner: "Max Verstappen",
     winningTeam: "Red Bull Racing",
     fastestLap: "George Russell",
     date: "30 Aug",
+    summary:
+      "Zandvoort premiou tracao e gestao de pneus, com Verstappen retomando controle no stint final.",
+    sessions: [
+      {
+        type: "race",
+        label: "Corrida",
+        winner: "Max Verstappen",
+        team: "Red Bull Racing",
+        second: "George Russell",
+        third: "Lando Norris",
+        note: "Verstappen abriu vantagem depois da segunda parada.",
+      },
+      {
+        type: "qualifying",
+        label: "Classificacao",
+        winner: "Lando Norris",
+        team: "McLaren",
+        second: "Max Verstappen",
+        third: "George Russell",
+        note: "Norris encontrou volta limpa antes da chuva leve no fim do Q3.",
+      },
+    ],
   },
   {
     round: 14,
+    slug: "belgian-gp",
     race: "Belgian GP",
+    circuit: "Circuit de Spa-Francorchamps",
+    country: "Belgium",
     winner: "Lewis Hamilton",
     winningTeam: "Mercedes",
     fastestLap: "Lewis Hamilton",
     date: "26 Jul",
+    summary:
+      "Spa teve variacao de clima e leitura estrategica forte da Mercedes nas janelas de intermediario.",
+    sessions: [
+      {
+        type: "race",
+        label: "Corrida",
+        winner: "Lewis Hamilton",
+        team: "Mercedes",
+        second: "Max Verstappen",
+        third: "Charles Leclerc",
+        note: "Hamilton antecipou a parada certa antes da pista secar.",
+      },
+      {
+        type: "sprint",
+        label: "Sprint",
+        winner: "Max Verstappen",
+        team: "Red Bull Racing",
+        second: "Oscar Piastri",
+        third: "Lewis Hamilton",
+        note: "Verstappen venceu a sprint com ritmo forte de pneu medio.",
+      },
+      {
+        type: "qualifying",
+        label: "Classificacao",
+        winner: "Charles Leclerc",
+        team: "Ferrari",
+        second: "Lewis Hamilton",
+        third: "Max Verstappen",
+        note: "Leclerc acertou o timing da volta em condicao mista.",
+      },
+    ],
   },
 ];
 
@@ -459,7 +585,13 @@ export function getConstructorBySlug(slug: string) {
 }
 
 export function getResultsByTeam(team: string) {
-  return recentResults.filter((result) => result.winningTeam === team);
+  return recentResults.filter((result) =>
+    result.sessions.some((session) => session.team === team),
+  );
+}
+
+export function getRaceBySlug(slug: string) {
+  return recentResults.find((result) => result.slug === slug);
 }
 
 export function getSeasonStats() {

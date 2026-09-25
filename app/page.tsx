@@ -4,28 +4,28 @@ import { DriverExplorer } from "./components/driver-explorer";
 import { RaceResults } from "./components/race-results";
 import { SeasonInsights } from "./components/season-insights";
 import {
-  constructors,
-  drivers,
-  getSeasonStats,
-  getTeams,
   pointsProgressionBySeason,
-  recentResults,
   seasonOptions,
-  upcomingRaces,
 } from "./data/f1-data";
+import { getDashboardData } from "./lib/f1-api";
+
+export const revalidate = 3600;
 
 const productRoadmap = [
-  "Conectar standings reais por temporada",
-  "Criar filtros por etapa e tipo de sessao",
-  "Adicionar pagina de detalhe por corrida",
-  "Trocar mocks por fetch/cache",
+  "Expandir API para resultados e qualificacao",
+  "Criar filtros por etapa, circuito e pais",
+  "Adicionar calendario completo",
+  "Cobrir a camada de API com testes",
 ];
 
-export default function Home() {
-  const stats = getSeasonStats();
+export default async function Home() {
+  const dashboard = await getDashboardData();
+  const { constructors, drivers, recentResults, stats, upcomingRaces } =
+    dashboard;
   const maxConstructorPoints = Math.max(
     ...constructors.map((constructor) => constructor.points),
   );
+  const teams = Array.from(new Set(drivers.map((driver) => driver.team))).sort();
 
   const quickStats = [
     {
@@ -108,7 +108,11 @@ export default function Home() {
               </div>
             </div>
 
-            <HeroLeaderCard />
+            <HeroLeaderCard
+              dataSource={dashboard.source}
+              sourceLabel={dashboard.sourceLabel}
+              drivers={drivers}
+            />
           </div>
         </div>
       </section>
@@ -131,11 +135,11 @@ export default function Home() {
       />
 
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-5 pb-14 sm:px-8 lg:grid-cols-[1.3fr_0.7fr] lg:px-10">
-        <DriverExplorer drivers={drivers} teams={getTeams()} />
+        <DriverExplorer drivers={drivers} teams={teams} />
 
         <aside className="grid content-start gap-6">
           <DriverComparison drivers={drivers} />
-          <CalendarPanel />
+          <CalendarPanel upcomingRaces={upcomingRaces} />
           <RoadmapPanel />
         </aside>
       </section>
@@ -186,14 +190,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8 lg:px-10">
+      <section
+        className="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8 lg:px-10"
+        id="resultados"
+      >
         <RaceResults results={recentResults} />
       </section>
     </main>
   );
 }
 
-function HeroLeaderCard() {
+function HeroLeaderCard({
+  dataSource,
+  drivers,
+  sourceLabel,
+}: {
+  dataSource: "api" | "mock";
+  drivers: typeof import("./data/f1-data").drivers;
+  sourceLabel: string;
+}) {
   const leader = drivers[0];
 
   return (
@@ -206,6 +221,9 @@ function HeroLeaderCard() {
           </p>
           <h2 className="mt-3 text-4xl font-black">{leader.name}</h2>
           <p className="mt-2 text-white/62">{leader.team}</p>
+          <p className="mt-4 inline-flex rounded bg-white/10 px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-white/62">
+            {dataSource === "api" ? "Ao vivo via" : "Fallback"} {sourceLabel}
+          </p>
         </div>
         <div className="rounded bg-white px-4 py-3 text-right text-[#161616]">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/45">
@@ -252,7 +270,11 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CalendarPanel() {
+function CalendarPanel({
+  upcomingRaces,
+}: {
+  upcomingRaces: typeof import("./data/f1-data").upcomingRaces;
+}) {
   return (
     <div className="rounded border border-black/10 bg-white p-5" id="calendario">
       <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
