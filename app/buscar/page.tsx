@@ -47,7 +47,7 @@ export default async function SearchPage() {
           <div className="grid gap-8 py-12 lg:grid-cols-[1fr_420px] lg:items-end">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.3em] text-[#ffcc00]">
-                {search.source === "api" ? "Jolpica F1 API" : "Fallback local"}
+                {search.source === "api" ? search.sourceLabel : "Fallback local"}
               </p>
               <h1 className="mt-4 text-5xl font-black leading-none sm:text-7xl">
                 Busca global

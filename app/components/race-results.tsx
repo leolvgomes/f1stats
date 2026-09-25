@@ -49,13 +49,13 @@ export function RaceResults({ results }: RaceResultsProps) {
   }, [results, sessionFilter, teamFilter]);
 
   return (
-    <div className="rounded border border-black/10 bg-white p-5">
+    <div className="f1-card rounded p-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+        <div className="min-w-0">
+          <p className="f1-eyebrow">
             Resultados
           </p>
-          <h2 className="mt-2 text-3xl font-black">Ultimas corridas</h2>
+          <h2 className="f1-section-heading mt-2 break-words text-3xl">Ultimas corridas</h2>
         </div>
         <p className="max-w-xl text-sm leading-6 text-black/55">
           Historico demo com filtros por equipe e tipo de sessao.
@@ -63,7 +63,7 @@ export function RaceResults({ results }: RaceResultsProps) {
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-[1fr_220px_220px]">
-        <div className="rounded bg-[#f5f2ec] p-4">
+        <div className="f1-card-soft rounded p-4">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
             Exibindo
           </p>
@@ -75,7 +75,7 @@ export function RaceResults({ results }: RaceResultsProps) {
         <label className="grid gap-2 text-sm font-bold text-black/58">
           Equipe
           <select
-            className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600]"
+            className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600] focus:ring-4 focus:ring-[#e10600]/10"
             onChange={(event) => setTeamFilter(event.target.value)}
             value={teamFilter}
           >
@@ -91,7 +91,7 @@ export function RaceResults({ results }: RaceResultsProps) {
         <label className="grid gap-2 text-sm font-bold text-black/58">
           Sessao
           <select
-            className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600]"
+            className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600] focus:ring-4 focus:ring-[#e10600]/10"
             onChange={(event) =>
               setSessionFilter(event.target.value as "all" | SessionType)
             }
@@ -106,39 +106,39 @@ export function RaceResults({ results }: RaceResultsProps) {
         </label>
       </div>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
+      <div className="mt-6 grid min-w-0 gap-3 md:grid-cols-2">
         {filteredResults.map((result) => (
-          <article className="rounded bg-[#f5f2ec] p-4" key={result.race}>
-            <div className="flex items-center justify-between gap-4">
+          <article className="f1-card-soft min-w-0 rounded p-4" key={result.race}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm font-black text-black/45">
                 R{result.round}
               </span>
-              <span className="rounded bg-white px-2 py-1 text-xs font-black">
+              <span className="rounded bg-white px-2 py-1 text-xs font-black shadow-sm">
                 {result.date}
               </span>
             </div>
-            <h3 className="mt-3 text-xl font-black">{result.race}</h3>
-            <p className="mt-1 text-sm font-bold text-black/52">
+            <h3 className="mt-3 break-words text-xl font-black">{result.race}</h3>
+            <p className="mt-1 break-words text-sm font-bold text-black/52">
               {result.circuit} / {result.country}
             </p>
             <div className="mt-4 grid gap-2">
               {result.sessions.map((session) => (
-                <div className="rounded bg-white p-3" key={session.label}>
-                  <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 rounded bg-white p-3 shadow-sm" key={session.label}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-black uppercase tracking-[0.16em] text-black/42">
                       {session.label}
                     </span>
-                    <span className="text-sm font-black">{session.team}</span>
+                    <span className="break-words text-sm font-black">{session.team}</span>
                   </div>
-                  <p className="mt-2 font-black">{session.winner}</p>
-                  <p className="mt-1 text-sm font-bold text-black/52">
+                  <p className="mt-2 break-words font-black">{session.winner}</p>
+                  <p className="mt-1 break-words text-sm font-bold text-black/52">
                     {session.note}
                   </p>
                 </div>
               ))}
             </div>
             <Link
-              className="mt-4 inline-flex rounded bg-[#151515] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-[#e10600]"
+              className="mt-4 inline-flex max-w-full rounded bg-[#121217] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white transition hover:bg-[#e10600]"
               href={`/corridas/${result.slug}`}
             >
               Ver corrida
@@ -148,7 +148,7 @@ export function RaceResults({ results }: RaceResultsProps) {
       </div>
 
       {filteredResults.length === 0 ? (
-        <div className="mt-6 rounded bg-[#f5f2ec] p-6 text-center text-sm font-bold text-black/58">
+        <div className="f1-card-soft mt-6 rounded p-6 text-center text-sm font-bold text-black/58">
           Nenhuma corrida encontrada com esses filtros.
         </div>
       ) : null}

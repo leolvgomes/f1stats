@@ -2,6 +2,7 @@ import {
   constructors as mockConstructors,
   drivers as mockDrivers,
   recentResults,
+  seasonOptions,
   upcomingRaces as mockUpcomingRaces,
   type CalendarRace,
   type Constructor,
@@ -14,151 +15,74 @@ import {
 } from "../data/f1-data";
 import type { SearchItem } from "./search-types";
 
-const JOLPICA_BASE_URL = "https://api.jolpi.ca/ergast/f1";
+const OPENF1_BASE_URL = "https://api.openf1.org/v1";
 const API_REVALIDATE_SECONDS = 60 * 60;
 
 type DataSource = "api" | "mock";
 
-type JolpicaDriverStanding = {
-  position: string;
-  points: string;
-  wins: string;
-  Driver: {
-    driverId: string;
-    givenName: string;
-    familyName: string;
-    permanentNumber?: string;
-    nationality: string;
-  };
-  Constructors: Array<{
-    name: string;
-  }>;
+type OpenF1Meeting = {
+  circuit_short_name: string;
+  country_name: string;
+  date_end: string;
+  date_start: string;
+  location: string;
+  meeting_key: number;
+  meeting_name: string;
+  meeting_official_name: string;
+  year: number;
 };
 
-type JolpicaConstructorStanding = {
-  position: string;
-  points: string;
-  wins: string;
-  Constructor: {
-    constructorId: string;
-    name: string;
-    nationality: string;
-  };
+type OpenF1Session = {
+  circuit_short_name: string;
+  country_name: string;
+  date_end: string;
+  date_start: string;
+  location: string;
+  meeting_key: number;
+  session_key: number;
+  session_name: string;
+  session_type: string;
+  year: number;
 };
 
-type JolpicaRace = {
-  round: string;
-  raceName: string;
-  date: string;
-  time?: string;
-  FirstPractice?: JolpicaSessionTime;
-  SecondPractice?: JolpicaSessionTime;
-  ThirdPractice?: JolpicaSessionTime;
-  Qualifying?: JolpicaSessionTime;
-  Sprint?: JolpicaSessionTime;
-  SprintQualifying?: JolpicaSessionTime;
-  SprintShootout?: JolpicaSessionTime;
-  Circuit: {
-    circuitId?: string;
-    circuitName: string;
-    Location: {
-      country: string;
-    };
-  };
+type OpenF1Driver = {
+  driver_number: number;
+  full_name: string;
+  name_acronym?: string;
+  team_name: string;
 };
 
-type JolpicaSessionTime = {
-  date: string;
-  time?: string;
+type OpenF1SessionResult = {
+  dnf?: boolean;
+  dns?: boolean;
+  dsq?: boolean;
+  driver_number: number;
+  duration?: number | number[];
+  gap_to_leader?: number | string | Array<number | string | null> | null;
+  number_of_laps?: number;
+  position: number;
+  session_key: number;
 };
 
-type JolpicaResult = {
-  Constructor: {
-    name: string;
-  };
-  Driver: {
-    driverId: string;
-    familyName: string;
-    givenName: string;
-  };
-  FastestLap?: {
-    rank: string;
-  };
-  Time?: {
-    time: string;
-  };
-  grid: string;
-  laps: string;
-  points: string;
-  position: string;
-  status: string;
+type OpenF1StartingGrid = {
+  driver_number: number;
+  position: number;
+  session_key: number;
 };
 
-type JolpicaQualifyingResult = {
-  Constructor: {
-    name: string;
-  };
-  Driver: {
-    driverId: string;
-    familyName: string;
-    givenName: string;
-  };
-  Q1?: string;
-  Q2?: string;
-  Q3?: string;
-  position: string;
+type OpenF1DriverStanding = {
+  driver_number: number;
+  points_current: number;
+  points_start: number;
+  position_current: number;
+  position_start: number;
 };
 
-type DriverStandingsResponse = {
-  MRData: {
-    StandingsTable: {
-      StandingsLists: Array<{
-        DriverStandings: JolpicaDriverStanding[];
-      }>;
-    };
-  };
-};
-
-type ConstructorStandingsResponse = {
-  MRData: {
-    StandingsTable: {
-      StandingsLists: Array<{
-        ConstructorStandings: JolpicaConstructorStanding[];
-      }>;
-    };
-  };
-};
-
-type RaceScheduleResponse = {
-  MRData: {
-    RaceTable: {
-      Races: JolpicaRace[];
-    };
-  };
-};
-
-type RaceResultsResponse = {
-  MRData: {
-    RaceTable: {
-      Races: Array<
-        JolpicaRace & {
-          Results?: JolpicaResult[];
-        }
-      >;
-    };
-  };
-};
-
-type QualifyingResultsResponse = {
-  MRData: {
-    RaceTable: {
-      Races: Array<
-        JolpicaRace & {
-          QualifyingResults?: JolpicaQualifyingResult[];
-        }
-      >;
-    };
-  };
+type OpenF1TeamStanding = {
+  points_current: number;
+  position_current: number;
+  position_start: number;
+  team_name: string;
 };
 
 export type DashboardData = {
@@ -198,18 +122,14 @@ export type RaceDetailsData = {
   sprintResults: RaceClassification[];
 };
 
-async function fetchJolpica<T>(path: string) {
-  const response = await fetch(`${JOLPICA_BASE_URL}${path}`, {
-    headers: {
-      Accept: "application/json",
-    },
-    next: {
-      revalidate: API_REVALIDATE_SECONDS,
-    },
+async function fetchOpenF1<T>(path: string) {
+  const response = await fetch(`${OPENF1_BASE_URL}${path}`, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: API_REVALIDATE_SECONDS },
   });
 
   if (!response.ok) {
-    throw new Error(`Jolpica request failed: ${response.status}`);
+    throw new Error(`OpenF1 request failed: ${response.status}`);
   }
 
   return (await response.json()) as T;
@@ -217,23 +137,23 @@ async function fetchJolpica<T>(path: string) {
 
 export async function getDashboardData(season = "current"): Promise<DashboardData> {
   try {
-    const [driverStandings, constructorStandings, schedule] = await Promise.all([
-      getDriverStandings(season),
-      getConstructorStandings(season),
-      getRaceSchedule(season),
-    ]);
-
-    const drivers = mergeDrivers(driverStandings);
-    const constructors = mergeConstructors(constructorStandings);
-    const upcomingRaces = mapUpcomingRaces(schedule);
+    const resolvedSeason = resolveSeason(season);
+    const meetings = await getMeetings(resolvedSeason);
+    const latestRaceSession = await getLatestRaceSession(resolvedSeason);
+    const [drivers, constructors] = latestRaceSession
+      ? await Promise.all([
+          getDriverStandings(season, latestRaceSession.session_key),
+          getConstructorStandings(season, latestRaceSession.session_key),
+        ])
+      : [mockDrivers, mockConstructors];
 
     return buildDashboardData({
-      constructors,
-      drivers,
-      season,
+      constructors: constructors.length ? constructors : mockConstructors,
+      drivers: drivers.length ? drivers : mockDrivers,
+      season: resolvedSeason.toString(),
       source: "api",
-      sourceLabel: "Jolpica F1 API",
-      upcomingRaces: upcomingRaces.length > 0 ? upcomingRaces : mockUpcomingRaces,
+      sourceLabel: "OpenF1 API",
+      upcomingRaces: mapUpcomingRaces(meetings),
     });
   } catch {
     return buildDashboardData({
@@ -247,64 +167,78 @@ export async function getDashboardData(season = "current"): Promise<DashboardDat
   }
 }
 
-export async function getDriverStandings(season = "current") {
-  const data = await fetchJolpica<DriverStandingsResponse>(
-    `/${season}/driverstandings.json`,
-  );
+export async function getDriverStandings(
+  season = "current",
+  sessionKey?: number,
+) {
+  const latestRaceSession = sessionKey
+    ? undefined
+    : await getLatestRaceSession(resolveSeason(season));
+  const standingsSessionKey = sessionKey ?? latestRaceSession?.session_key;
 
-  return data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
+  if (!standingsSessionKey) {
+    return mockDrivers;
+  }
+
+  const [standings, drivers] = await Promise.all([
+    fetchOpenF1<OpenF1DriverStanding[]>(
+      `/championship_drivers?session_key=${standingsSessionKey}`,
+    ),
+    getDriversForSession(standingsSessionKey),
+  ]);
+
+  if (standings.length === 0) {
+    return mockDrivers;
+  }
+
+  return standings
+    .sort((first, second) => first.position_current - second.position_current)
+    .map((standing) => mapDriverStanding(standing, drivers));
 }
 
-export async function getConstructorStandings(season = "current") {
-  const data = await fetchJolpica<ConstructorStandingsResponse>(
-    `/${season}/constructorstandings.json`,
+export async function getConstructorStandings(
+  season = "current",
+  sessionKey?: number,
+) {
+  const latestRaceSession = sessionKey
+    ? undefined
+    : await getLatestRaceSession(resolveSeason(season));
+  const standingsSessionKey = sessionKey ?? latestRaceSession?.session_key;
+
+  if (!standingsSessionKey) {
+    return mockConstructors;
+  }
+
+  const standings = await fetchOpenF1<OpenF1TeamStanding[]>(
+    `/championship_teams?session_key=${standingsSessionKey}`,
   );
 
-  return (
-    data.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? []
-  );
+  if (standings.length === 0) {
+    return mockConstructors;
+  }
+
+  return standings
+    .sort((first, second) => first.position_current - second.position_current)
+    .map(mapConstructorStanding);
 }
 
 export async function getRaceSchedule(season = "current") {
-  const data = await fetchJolpica<RaceScheduleResponse>(`/${season}.json`);
-
-  return data.MRData.RaceTable.Races ?? [];
-}
-
-export async function getRaceResults(season: string, round: number) {
-  const data = await fetchJolpica<RaceResultsResponse>(
-    `/${season}/${round}/results.json`,
-  );
-
-  return data.MRData.RaceTable.Races[0];
-}
-
-export async function getQualifyingResults(season: string, round: number) {
-  const data = await fetchJolpica<QualifyingResultsResponse>(
-    `/${season}/${round}/qualifying.json`,
-  );
-
-  return data.MRData.RaceTable.Races[0];
-}
-
-export async function getSprintResults(season: string, round: number) {
-  const data = await fetchJolpica<RaceResultsResponse>(
-    `/${season}/${round}/sprint.json`,
-  );
-
-  return data.MRData.RaceTable.Races[0];
+  return getMeetings(resolveSeason(season));
 }
 
 export async function getCalendarData(season = "current"): Promise<CalendarData> {
   try {
-    const schedule = await getRaceSchedule(season);
-    const races = mapCalendarRaces(schedule);
+    const resolvedSeason = resolveSeason(season);
+    const [meetings, sessionsByMeeting] = await Promise.all([
+      getMeetings(resolvedSeason),
+      getSessionsByMeeting(resolvedSeason),
+    ]);
 
     return {
-      races: races.length > 0 ? races : getMockCalendarRaces(),
-      season,
+      races: mapCalendarRaces(meetings, sessionsByMeeting),
+      season: resolvedSeason.toString(),
       source: "api",
-      sourceLabel: "Jolpica F1 API",
+      sourceLabel: "OpenF1 API",
     };
   } catch {
     return {
@@ -323,100 +257,68 @@ export async function getRaceDetails(
   const fallbackRace = recentResults.find((result) => result.slug === slug);
 
   try {
-    const schedule = await getRaceSchedule(season);
-    const scheduledRace =
-      schedule.find((race) => slugify(race.raceName) === slug) ??
-      schedule.find((race) => Number(race.round) === fallbackRace?.round);
+    const resolvedSeason = resolveSeason(season);
+    const [meetings, sessionsByMeeting] = await Promise.all([
+      getMeetings(resolvedSeason),
+      getSessionsByMeeting(resolvedSeason),
+    ]);
+    const meeting = findMeetingBySlug(meetings, slug, fallbackRace);
 
-    if (!scheduledRace && !fallbackRace) {
-      return null;
+    if (!meeting) {
+      return fallbackRace ? buildMockRaceDetails(fallbackRace) : null;
     }
 
-    const round = Number(scheduledRace?.round ?? fallbackRace?.round);
-    const [raceResponse, qualifyingResponse, sprintResponse] = await Promise.all([
-      getRaceResults(season, round).catch(() => undefined),
-      getQualifyingResults(season, round).catch(() => undefined),
-      getSprintResults(season, round).catch(() => undefined),
-    ]);
-
-    const raceResults = mapRaceClassification(raceResponse?.Results ?? []);
-    const qualifyingResults = mapQualifyingClassification(
-      qualifyingResponse?.QualifyingResults ?? [],
+    const sessions = sessionsByMeeting.get(meeting.meeting_key) ?? [];
+    const raceSession = findSession(sessions, "Race");
+    const qualifyingSession = findSession(sessions, "Qualifying");
+    const sprintSession = findSession(sessions, "Sprint");
+    const [drivers, raceResults, qualifyingResults, sprintResults, grid] =
+      await Promise.all([
+        raceSession ? getDriversForSession(raceSession.session_key) : new Map(),
+        raceSession ? getSessionResult(raceSession.session_key).catch(() => []) : [],
+        qualifyingSession
+          ? getSessionResult(qualifyingSession.session_key).catch(() => [])
+          : [],
+        sprintSession ? getSessionResult(sprintSession.session_key).catch(() => []) : [],
+        raceSession ? getStartingGrid(raceSession.session_key).catch(() => []) : [],
+      ]);
+    const gridByDriver = new Map(
+      grid.map((entry) => [entry.driver_number, entry.position]),
     );
-    const sprintResults = mapRaceClassification(sprintResponse?.Results ?? []);
-    const winner = raceResults[0];
-    const pole = qualifyingResults[0];
-    const sprintWinner = sprintResults[0];
-    const fastestLapResult = raceResponse?.Results?.find(
-      (result) => result.FastestLap?.rank === "1",
+    const mappedRaceResults = mapOpenF1Classification(
+      raceResults,
+      drivers,
+      gridByDriver,
     );
-    const fastestLap =
-      fastestLapResult ? formatDriverName(fastestLapResult.Driver) : fallbackRace?.fastestLap;
-    const generatedSessions: RaceResult["sessions"] = [
-      winner
-        ? {
-            label: "Corrida",
-            note: `${winner.driver} terminou na frente depois de largar em P${winner.grid ?? "?"}.`,
-            second: raceResults[1]?.driver ?? "Nao informado",
-            team: winner.team,
-            third: raceResults[2]?.driver ?? "Nao informado",
-            type: "race",
-            winner: winner.driver,
-          }
-        : undefined,
-      sprintWinner
-        ? {
-            label: "Sprint",
-            note: `${sprintWinner.driver} liderou a classificacao curta do fim de semana.`,
-            second: sprintResults[1]?.driver ?? "Nao informado",
-            team: sprintWinner.team,
-            third: sprintResults[2]?.driver ?? "Nao informado",
-            type: "sprint",
-            winner: sprintWinner.driver,
-          }
-        : undefined,
-      pole
-        ? {
-            label: "Classificacao",
-            note: `${pole.driver} ficou com a melhor posicao de largada registrada pela API.`,
-            second: qualifyingResults[1]?.driver ?? "Nao informado",
-            team: pole.team,
-            third: qualifyingResults[2]?.driver ?? "Nao informado",
-            type: "qualifying",
-            winner: pole.driver,
-          }
-        : undefined,
-    ].filter((session): session is RaceResult["sessions"][number] =>
-      Boolean(session),
+    const mappedQualifyingResults = mapOpenF1Qualifying(
+      qualifyingResults,
+      drivers,
     );
-
-    const race: RaceResult = {
-      circuit:
-        scheduledRace?.Circuit.circuitName ?? fallbackRace?.circuit ?? "Circuito",
-      country:
-        scheduledRace?.Circuit.Location.country ?? fallbackRace?.country ?? "Pais",
-      date: scheduledRace ? formatRaceDate(scheduledRace.date) : fallbackRace?.date ?? "",
-      fastestLap: fastestLap ?? "Nao informado",
-      race: scheduledRace?.raceName ?? fallbackRace?.race ?? "Grande Premio",
-      round,
-      slug: slugify(scheduledRace?.raceName ?? fallbackRace?.race ?? slug),
-      summary:
-        fallbackRace?.summary ??
-        `Resumo gerado com classificacoes oficiais disponiveis para a etapa ${round}.`,
-      sessions: generatedSessions.length ? generatedSessions : (fallbackRace?.sessions ?? []),
-      winner: winner?.driver ?? fallbackRace?.winner ?? "Nao informado",
-      winningTeam: winner?.team ?? fallbackRace?.winningTeam ?? "Nao informado",
-    };
+    const mappedSprintResults = mapOpenF1Classification(sprintResults, drivers);
+    const winner = mappedRaceResults[0];
+    const pole = mappedQualifyingResults[0];
+    const sprintWinner = mappedSprintResults[0];
+    const race = buildRaceResult({
+      fallbackRace,
+      meeting,
+      meetings,
+      pole,
+      raceResults: mappedRaceResults,
+      sprintWinner,
+      winner,
+    });
 
     return {
-      fastestLap,
-      qualifyingResults,
+      fastestLap: race.fastestLap,
+      qualifyingResults: mappedQualifyingResults,
       race,
-      raceResults,
-      scheduleSessions: scheduledRace ? mapWeekendSessions(scheduledRace) : [],
+      raceResults: mappedRaceResults.length
+        ? mappedRaceResults
+        : buildMockRaceDetails(fallbackRace ?? race).raceResults,
+      scheduleSessions: mapWeekendSessions(sessions),
       source: "api",
-      sourceLabel: "Jolpica F1 API",
-      sprintResults,
+      sourceLabel: "OpenF1 API",
+      sprintResults: mappedSprintResults,
     };
   } catch {
     return fallbackRace ? buildMockRaceDetails(fallbackRace) : null;
@@ -428,7 +330,6 @@ export async function getSearchData(season = "current") {
     getDashboardData(season),
     getCalendarData(season),
   ]);
-
   const driverItems: SearchItem[] = dashboard.drivers.map((driver) => ({
     description: `${driver.team} / #${driver.number} / ${driver.country}`,
     href: `/pilotos/${driver.slug}`,
@@ -463,9 +364,64 @@ export async function getSearchData(season = "current") {
     source: dashboard.source === "api" || calendar.source === "api" ? "api" : "mock",
     sourceLabel:
       dashboard.source === "api" || calendar.source === "api"
-        ? "Jolpica F1 API"
+        ? "OpenF1 API"
         : "Dados demo locais",
   };
+}
+
+async function getMeetings(season: number) {
+  return fetchOpenF1<OpenF1Meeting[]>(`/meetings?year=${season}`);
+}
+
+async function getSessions(season: number) {
+  return fetchOpenF1<OpenF1Session[]>(`/sessions?year=${season}`);
+}
+
+async function getSessionResult(sessionKey: number) {
+  return fetchOpenF1<OpenF1SessionResult[]>(
+    `/session_result?session_key=${sessionKey}`,
+  );
+}
+
+async function getStartingGrid(sessionKey: number) {
+  return fetchOpenF1<OpenF1StartingGrid[]>(
+    `/starting_grid?session_key=${sessionKey}`,
+  );
+}
+
+async function getSessionsByMeeting(season: number) {
+  const sessions = await getSessions(season);
+  const sessionsByMeeting = new Map<number, OpenF1Session[]>();
+
+  sessions.forEach((session) => {
+    sessionsByMeeting.set(session.meeting_key, [
+      ...(sessionsByMeeting.get(session.meeting_key) ?? []),
+      session,
+    ]);
+  });
+
+  return sessionsByMeeting;
+}
+
+async function getLatestRaceSession(season: number) {
+  const sessions = await getSessions(season);
+
+  return sessions
+    .filter((session) => session.session_type === "Race")
+    .filter((session) => new Date(session.date_start).getTime() <= Date.now())
+    .sort(
+      (first, second) =>
+        new Date(second.date_start).getTime() -
+        new Date(first.date_start).getTime(),
+    )[0];
+}
+
+async function getDriversForSession(sessionKey: number) {
+  const drivers = await fetchOpenF1<OpenF1Driver[]>(
+    `/drivers?session_key=${sessionKey}`,
+  );
+
+  return new Map(drivers.map((driver) => [driver.driver_number, driver]));
 }
 
 function buildDashboardData({
@@ -486,6 +442,8 @@ function buildDashboardData({
   const leader = drivers[0] ?? mockDrivers[0];
   const runnerUp = drivers[1] ?? mockDrivers[1];
   const winners = new Set(drivers.filter((driver) => driver.wins > 0));
+  const seasonYear = season === "current" ? new Date().getFullYear().toString() : season;
+  const seasonSummary = seasonOptions.find((option) => option.year === seasonYear);
 
   return {
     constructors,
@@ -498,8 +456,8 @@ function buildDashboardData({
       driverCount: drivers.length,
       leader,
       leaderGap: Math.max(0, leader.points - runnerUp.points),
-      racesDone: 17,
-      racesTotal: Math.max(24, upcomingRaces.length),
+      racesDone: seasonSummary?.racesDone ?? 0,
+      racesTotal: seasonSummary?.racesTotal ?? Math.max(24, upcomingRaces.length),
       teamCount: constructors.length,
       winnerCount: winners.size,
     },
@@ -507,97 +465,85 @@ function buildDashboardData({
   };
 }
 
-function mergeDrivers(standings: JolpicaDriverStanding[]): Driver[] {
-  if (standings.length === 0) {
-    return mockDrivers;
-  }
+function mapDriverStanding(
+  standing: OpenF1DriverStanding,
+  drivers: Map<number, OpenF1Driver>,
+): Driver {
+  const openDriver = drivers.get(standing.driver_number);
+  const name = openDriver ? toTitleName(openDriver.full_name) : `#${standing.driver_number}`;
+  const fallback =
+    mockDrivers.find((driver) => normalize(driver.name) === normalize(name)) ??
+    mockDrivers.find((driver) => driver.number === standing.driver_number);
 
-  return standings.map((standing) => {
-    const name = `${standing.Driver.givenName} ${standing.Driver.familyName}`;
-    const fallback =
-      mockDrivers.find((driver) => normalize(driver.name) === normalize(name)) ??
-      mockDrivers.find(
-        (driver) =>
-          normalize(driver.team) === normalize(standing.Constructors[0]?.name ?? ""),
-      );
-
-    return {
-      averageFinish: fallback?.averageFinish ?? Number(standing.position),
-      country:
-        fallback?.country ??
-        standing.Driver.nationality.slice(0, 3).toUpperCase(),
-      dnfs: fallback?.dnfs ?? 0,
-      fastestLaps: fallback?.fastestLaps ?? 0,
-      name,
-      number: Number(standing.Driver.permanentNumber ?? fallback?.number ?? 0),
-      podiums: fallback?.podiums ?? 0,
-      points: Number(standing.points),
-      position: Number(standing.position),
-      qualifyingRank: fallback?.qualifyingRank ?? Number(standing.position),
-      slug: standing.Driver.driverId,
-      summary:
-        fallback?.summary ??
-        `${name} aparece em P${standing.position} com ${standing.points} pontos na classificacao atual.`,
-      team: standing.Constructors[0]?.name ?? fallback?.team ?? "Sem equipe",
-      trend: fallback?.trend ?? "stable",
-      wins: Number(standing.wins),
-    };
-  });
+  return {
+    averageFinish: fallback?.averageFinish ?? standing.position_current,
+    country: fallback?.country ?? openDriver?.name_acronym ?? "F1",
+    dnfs: fallback?.dnfs ?? 0,
+    fastestLaps: fallback?.fastestLaps ?? 0,
+    name,
+    number: standing.driver_number,
+    podiums: fallback?.podiums ?? 0,
+    points: standing.points_current,
+    position: standing.position_current,
+    qualifyingRank: fallback?.qualifyingRank ?? standing.position_current,
+    slug: fallback?.slug ?? slugify(name),
+    summary:
+      fallback?.summary ??
+      `${name} aparece em P${standing.position_current} com ${standing.points_current} pontos segundo a OpenF1.`,
+    team: openDriver?.team_name ?? fallback?.team ?? "Nao informado",
+    trend:
+      standing.position_current < standing.position_start
+        ? "up"
+        : standing.position_current > standing.position_start
+          ? "down"
+          : "stable",
+    wins: fallback?.wins ?? 0,
+  };
 }
 
-function mergeConstructors(
-  standings: JolpicaConstructorStanding[],
-): Constructor[] {
-  if (standings.length === 0) {
-    return mockConstructors;
-  }
+function mapConstructorStanding(standing: OpenF1TeamStanding): Constructor {
+  const fallback = mockConstructors.find(
+    (constructor) => normalize(constructor.name) === normalize(standing.team_name),
+  );
 
-  return standings.map((standing) => {
-    const fallback = mockConstructors.find(
-      (constructor) =>
-        normalize(constructor.name) === normalize(standing.Constructor.name),
-    );
-
-    return {
-      base: fallback?.base ?? standing.Constructor.nationality,
-      color: fallback?.color ?? "#e10600",
-      name: standing.Constructor.name,
-      podiums: fallback?.podiums ?? 0,
-      points: Number(standing.points),
-      position: Number(standing.position),
-      slug: standing.Constructor.constructorId,
-      summary:
-        fallback?.summary ??
-        `${standing.Constructor.name} soma ${standing.points} pontos na classificacao atual de construtores.`,
-      teamPrincipal: fallback?.teamPrincipal ?? "Nao informado",
-      wins: Number(standing.wins),
-    };
-  });
+  return {
+    base: fallback?.base ?? "Nao informado",
+    color: fallback?.color ?? "#e10600",
+    name: standing.team_name,
+    podiums: fallback?.podiums ?? 0,
+    points: standing.points_current,
+    position: standing.position_current,
+    slug: fallback?.slug ?? slugify(standing.team_name),
+    summary:
+      fallback?.summary ??
+      `${standing.team_name} aparece em P${standing.position_current} com ${standing.points_current} pontos segundo a OpenF1.`,
+    teamPrincipal: fallback?.teamPrincipal ?? "Nao informado",
+    wins: fallback?.wins ?? 0,
+  };
 }
 
-function mapUpcomingRaces(races: JolpicaRace[]): Race[] {
-  const today = new Date();
-  const futureRaces = races
-    .filter((race) => new Date(`${race.date}T23:59:59`) >= today)
-    .slice(0, 3);
-
-  return futureRaces.map((race, index) => ({
-    circuit: race.Circuit.circuitName,
-    country: race.Circuit.Location.country,
-    date: formatRaceDate(race.date),
-    name: race.raceName,
-    round: Number(race.round),
-    sessions: mapWeekendSessions(race),
-    status: index === 0 ? "next" : "upcoming",
-  }));
+function mapUpcomingRaces(meetings: OpenF1Meeting[]): Race[] {
+  return meetings
+    .filter((meeting) => new Date(meeting.date_end).getTime() >= Date.now())
+    .slice(0, 3)
+    .map((meeting, index) => ({
+      circuit: meeting.circuit_short_name,
+      country: meeting.country_name,
+      date: formatRaceDate(meeting.date_start),
+      name: meeting.meeting_name,
+      round: getRound(meetings, meeting),
+      status: index === 0 ? "next" : "upcoming",
+    }));
 }
 
-function mapCalendarRaces(races: JolpicaRace[]): CalendarRace[] {
-  const today = new Date();
+function mapCalendarRaces(
+  meetings: OpenF1Meeting[],
+  sessionsByMeeting: Map<number, OpenF1Session[]>,
+): CalendarRace[] {
   let nextRaceFound = false;
 
-  return races.map((race) => {
-    const isFuture = new Date(`${race.date}T23:59:59`) >= today;
+  return meetings.map((meeting) => {
+    const isFuture = new Date(meeting.date_end).getTime() >= Date.now();
     const status = !isFuture
       ? "completed"
       : nextRaceFound
@@ -609,16 +555,133 @@ function mapCalendarRaces(races: JolpicaRace[]): CalendarRace[] {
     }
 
     return {
-      circuit: race.Circuit.circuitName,
-      country: race.Circuit.Location.country,
-      date: formatRaceDate(race.date),
-      name: race.raceName,
-      round: Number(race.round),
-      sessions: mapWeekendSessions(race),
-      slug: slugify(race.raceName),
+      circuit: meeting.circuit_short_name,
+      country: meeting.country_name,
+      date: formatRaceDate(meeting.date_start),
+      name: meeting.meeting_name,
+      round: getRound(meetings, meeting),
+      sessions: mapWeekendSessions(
+        sessionsByMeeting.get(meeting.meeting_key) ?? [],
+      ),
+      slug: slugify(meeting.meeting_name),
       status,
     };
   });
+}
+
+function buildRaceResult({
+  fallbackRace,
+  meeting,
+  meetings,
+  pole,
+  raceResults,
+  sprintWinner,
+  winner,
+}: {
+  fallbackRace?: RaceResult;
+  meeting: OpenF1Meeting;
+  meetings: OpenF1Meeting[];
+  pole?: QualifyingClassification;
+  raceResults: RaceClassification[];
+  sprintWinner?: RaceClassification;
+  winner?: RaceClassification;
+}): RaceResult {
+  const generatedSessions: RaceResult["sessions"] = [
+    winner
+      ? {
+          label: "Corrida",
+          note: `${winner.driver} venceu a corrida registrada pela OpenF1.`,
+          second: raceResults[1]?.driver ?? "Nao informado",
+          team: winner.team,
+          third: raceResults[2]?.driver ?? "Nao informado",
+          type: "race",
+          winner: winner.driver,
+        }
+      : undefined,
+    sprintWinner
+      ? {
+          label: "Sprint",
+          note: `${sprintWinner.driver} liderou a sprint registrada pela OpenF1.`,
+          second: "Nao informado",
+          team: sprintWinner.team,
+          third: "Nao informado",
+          type: "sprint",
+          winner: sprintWinner.driver,
+        }
+      : undefined,
+    pole
+      ? {
+          label: "Classificacao",
+          note: `${pole.driver} fechou a classificacao em P1 segundo a OpenF1.`,
+          second: "Nao informado",
+          team: pole.team,
+          third: "Nao informado",
+          type: "qualifying",
+          winner: pole.driver,
+        }
+      : undefined,
+  ].filter((session): session is RaceResult["sessions"][number] =>
+    Boolean(session),
+  );
+
+  return {
+    circuit: meeting.circuit_short_name,
+    country: meeting.country_name,
+    date: formatRaceDate(meeting.date_start),
+    fastestLap: fallbackRace?.fastestLap ?? "Nao informado",
+    race: meeting.meeting_name,
+    round: getRound(meetings, meeting),
+    slug: slugify(meeting.meeting_name),
+    summary:
+      fallbackRace?.summary ??
+      `${meeting.meeting_name} com sessoes e resultados consumidos da OpenF1.`,
+    sessions: generatedSessions.length ? generatedSessions : (fallbackRace?.sessions ?? []),
+    winner: winner?.driver ?? fallbackRace?.winner ?? "Nao informado",
+    winningTeam: winner?.team ?? fallbackRace?.winningTeam ?? "Nao informado",
+  };
+}
+
+function mapOpenF1Classification(
+  results: OpenF1SessionResult[],
+  drivers: Map<number, OpenF1Driver>,
+  gridByDriver = new Map<number, number>(),
+): RaceClassification[] {
+  return results
+    .sort((first, second) => first.position - second.position)
+    .map((result) => {
+      const driver = drivers.get(result.driver_number);
+
+      return {
+        driver: driver ? toTitleName(driver.full_name) : `#${result.driver_number}`,
+        grid: gridByDriver.get(result.driver_number),
+        laps: result.number_of_laps,
+        position: result.position,
+        status: getResultStatus(result),
+        team: driver?.team_name ?? findDriverTeamByNumber(result.driver_number),
+        time: formatDuration(result.duration),
+      };
+    });
+}
+
+function mapOpenF1Qualifying(
+  results: OpenF1SessionResult[],
+  drivers: Map<number, OpenF1Driver>,
+): QualifyingClassification[] {
+  return results
+    .sort((first, second) => first.position - second.position)
+    .map((result) => {
+      const driver = drivers.get(result.driver_number);
+      const durations = Array.isArray(result.duration) ? result.duration : [];
+
+      return {
+        driver: driver ? toTitleName(driver.full_name) : `#${result.driver_number}`,
+        position: result.position,
+        q1: formatDuration(durations[0]),
+        q2: formatDuration(durations[1]),
+        q3: formatDuration(durations[2]),
+        team: driver?.team_name ?? findDriverTeamByNumber(result.driver_number),
+      };
+    });
 }
 
 function getMockCalendarRaces(): CalendarRace[] {
@@ -671,90 +734,148 @@ function buildMockRaceDetails(race: RaceResult): RaceDetailsData {
   };
 }
 
-function mapWeekendSessions(race: JolpicaRace): RaceWeekendSession[] {
-  return [
-    mapSessionTime("Treino livre 1", "practice", race.FirstPractice),
-    mapSessionTime("Treino livre 2", "practice", race.SecondPractice),
-    mapSessionTime("Treino livre 3", "practice", race.ThirdPractice),
-    mapSessionTime(
-      "Sprint Qualifying",
-      "sprint-qualifying",
-      race.SprintQualifying ?? race.SprintShootout,
-    ),
-    mapSessionTime("Sprint", "sprint", race.Sprint),
-    mapSessionTime("Classificacao", "qualifying", race.Qualifying),
-    mapSessionTime("Corrida", "race", {
-      date: race.date,
-      time: race.time,
-    }),
-  ].filter((session): session is RaceWeekendSession => Boolean(session));
+function mapWeekendSessions(sessions: OpenF1Session[]): RaceWeekendSession[] {
+  return [...sessions]
+    .sort(
+      (first, second) =>
+        new Date(first.date_start).getTime() -
+        new Date(second.date_start).getTime(),
+    )
+    .map((session) => ({
+      date: formatRaceDate(session.date_start),
+      label: translateSessionName(session.session_name),
+      time: formatSessionTime(session.date_start),
+      type: toSessionType(session.session_type),
+    }));
 }
 
-function mapSessionTime(
-  label: string,
-  type: RaceWeekendSession["type"],
-  session?: JolpicaSessionTime,
-): RaceWeekendSession | undefined {
-  if (!session) {
-    return undefined;
+function findMeetingBySlug(
+  meetings: OpenF1Meeting[],
+  slug: string,
+  fallbackRace?: RaceResult,
+) {
+  return (
+    meetings.find((meeting) => slugify(meeting.meeting_name) === slug) ??
+    meetings.find((meeting) => slugify(meeting.country_name) === slug) ??
+    meetings.find(
+      (meeting) =>
+        normalize(meeting.country_name) === normalize(fallbackRace?.country ?? ""),
+    )
+  );
+}
+
+function getRound(meetings: OpenF1Meeting[], meeting: OpenF1Meeting) {
+  return (
+    [...meetings]
+      .sort(
+        (first, second) =>
+          new Date(first.date_start).getTime() -
+          new Date(second.date_start).getTime(),
+      )
+      .findIndex((item) => item.meeting_key === meeting.meeting_key) + 1
+  );
+}
+
+function findSession(sessions: OpenF1Session[], sessionType: string) {
+  return sessions.find((session) => session.session_type === sessionType);
+}
+
+function resolveSeason(season: string) {
+  return season === "current" ? new Date().getFullYear() : Number(season);
+}
+
+function toSessionType(sessionType: string): RaceWeekendSession["type"] {
+  if (sessionType === "Race") {
+    return "race";
   }
 
-  return {
-    date: formatRaceDate(session.date),
-    label,
-    time: session.time ? formatSessionTime(session.date, session.time) : undefined,
-    type,
-  };
+  if (sessionType === "Sprint") {
+    return "sprint";
+  }
+
+  if (sessionType === "Sprint Qualifying") {
+    return "sprint-qualifying";
+  }
+
+  if (sessionType === "Qualifying") {
+    return "qualifying";
+  }
+
+  return "practice";
 }
 
-function mapRaceClassification(results: JolpicaResult[]): RaceClassification[] {
-  return results.map((result) => ({
-    driver: formatDriverName(result.Driver),
-    grid: Number(result.grid),
-    laps: Number(result.laps),
-    points: Number(result.points),
-    position: Number(result.position),
-    status: result.status,
-    team: result.Constructor.name,
-    time: result.Time?.time,
-  }));
-}
-
-function mapQualifyingClassification(
-  results: JolpicaQualifyingResult[],
-): QualifyingClassification[] {
-  return results.map((result) => ({
-    driver: formatDriverName(result.Driver),
-    position: Number(result.position),
-    q1: result.Q1,
-    q2: result.Q2,
-    q3: result.Q3,
-    team: result.Constructor.name,
-  }));
+function translateSessionName(sessionName: string) {
+  return sessionName
+    .replace("Practice", "Treino livre")
+    .replace("Qualifying", "Classificacao")
+    .replace("Race", "Corrida");
 }
 
 function formatRaceDate(date: string) {
   return new Intl.DateTimeFormat("en", {
     day: "2-digit",
     month: "short",
-  }).format(new Date(`${date}T12:00:00`));
+  }).format(new Date(date));
 }
 
-function formatSessionTime(date: string, time: string) {
+function formatSessionTime(date: string) {
   return new Intl.DateTimeFormat("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZoneName: "short",
-  }).format(new Date(`${date}T${time}`));
+  }).format(new Date(date));
 }
 
-function formatDriverName(driver: JolpicaResult["Driver"]) {
-  return `${driver.givenName} ${driver.familyName}`;
+function formatDuration(duration?: number | number[]) {
+  if (Array.isArray(duration) || typeof duration !== "number") {
+    return undefined;
+  }
+
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration - minutes * 60;
+
+  return minutes === 0
+    ? seconds.toFixed(3)
+    : `${minutes}:${seconds.toFixed(3).padStart(6, "0")}`;
+}
+
+function getResultStatus(result: OpenF1SessionResult) {
+  if (result.dsq) {
+    return "DSQ";
+  }
+
+  if (result.dns) {
+    return "DNS";
+  }
+
+  if (result.dnf) {
+    return "DNF";
+  }
+
+  return typeof result.gap_to_leader === "string"
+    ? result.gap_to_leader
+    : undefined;
+}
+
+function toTitleName(name: string) {
+  return name
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ");
 }
 
 function findDriverTeam(driverName: string) {
   return (
     mockDrivers.find((driver) => driver.name === driverName)?.team ??
+    "Nao informado"
+  );
+}
+
+function findDriverTeamByNumber(driverNumber: number) {
+  return (
+    mockDrivers.find((driver) => driver.number === driverNumber)?.team ??
     "Nao informado"
   );
 }

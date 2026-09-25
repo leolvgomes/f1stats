@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
       constructors,
       drivers,
       season,
-      source: "Jolpica F1 API",
+      source: "OpenF1 API",
     });
   } catch {
     return Response.json(
       {
         constructors: [],
         drivers: [],
-        error: "Nao foi possivel buscar standings externos agora.",
+        error: "Nao foi possivel buscar standings da OpenF1 agora.",
         season,
       },
       {

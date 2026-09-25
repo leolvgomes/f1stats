@@ -21,6 +21,8 @@ test("dashboard API exposes standings and fallback metadata", async () => {
   assert.ok(Array.isArray(dashboard.drivers));
   assert.ok(dashboard.drivers.length > 0);
   assert.ok(Array.isArray(dashboard.constructors));
+  assert.equal(dashboard.drivers[0].name, "Kimi Antonelli");
+  assert.equal(dashboard.stats.leader.name, "Kimi Antonelli");
   assert.match(dashboard.source, /^(api|mock)$/);
 });
 
@@ -39,6 +41,13 @@ test("race details API exposes classifications with fallback", async () => {
   assert.ok(Array.isArray(details.race.sessions));
   assert.ok(Array.isArray(details.raceResults));
   assert.match(details.source, /^(api|mock)$/);
+});
+
+test("races API exposes navigable race slugs", async () => {
+  const races = await getJson("/api/f1/races");
+
+  assert.ok(Array.isArray(races.races));
+  assert.ok(races.races.some((race) => typeof race.slug === "string"));
 });
 
 test("search API indexes navigable items", async () => {

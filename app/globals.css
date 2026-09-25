@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f3f3;
-  --foreground: #15151e;
+  --background: #f4f4f1;
+  --foreground: #121217;
   --panel: #ffffff;
-  --panel-soft: #f8f8f8;
-  --line: #d7d7d7;
-  --muted: #62626d;
+  --panel-soft: #f7f5ef;
+  --line: #dedbd2;
+  --muted: #68676f;
   --accent: #e10600;
-  --ink: #15151e;
+  --accent-dark: #b80500;
+  --ink: #121217;
+  --ink-soft: #1b1b23;
+  --gold: #ffcc00;
+  --teal: #27f4d2;
 }
 
 @theme inline {
@@ -19,7 +23,9 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    linear-gradient(180deg, #ffffff 0, var(--background) 420px),
+    var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -50,15 +56,11 @@ a {
   color: var(--foreground) !important;
 }
 
-.f1-track-theme section {
-  background-color: transparent;
-}
-
 .f1-track-theme [class*="bg-[#f5f2ec]"],
 .f1-track-theme [class*="bg-[#f7f7f7]"],
 .f1-track-theme [class*="bg-[#eee9df]"],
 .f1-track-theme [class*="bg-white/[0.06]"] {
-  background-color: var(--panel) !important;
+  background-color: var(--panel-soft) !important;
 }
 
 .f1-track-theme [class*="bg-[#151515]"],
@@ -95,19 +97,54 @@ a {
   border-radius: 8px;
 }
 
+.f1-card {
+  border: 1px solid color-mix(in srgb, var(--line) 82%, white);
+  background: color-mix(in srgb, var(--panel) 92%, white);
+  box-shadow: 0 18px 45px rgba(18, 18, 23, 0.08);
+}
+
+.f1-card-soft {
+  border: 1px solid color-mix(in srgb, var(--line) 76%, white);
+  background: var(--panel-soft);
+}
+
+.f1-dark-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0)),
+    var(--ink);
+  box-shadow: 0 22px 55px rgba(18, 18, 23, 0.22);
+}
+
+.f1-eyebrow {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.f1-section-heading {
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
 .f1-track-theme .shadow-2xl {
   box-shadow: 0 18px 48px rgba(21, 21, 30, 0.1);
 }
 
 .f1-track-theme .f1-official-header {
-  background: var(--accent) !important;
+  background: var(--ink) !important;
   color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .f1-track-theme .f1-results-shell {
-  border-top: 10px solid var(--accent);
-  border-right: 10px solid var(--accent);
-  border-top-right-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, white);
+  border-top: 8px solid var(--accent);
+  border-top-right-radius: 18px;
+  box-shadow: 0 24px 70px rgba(18, 18, 23, 0.1);
 }
 
 .f1-track-theme .f1-pill {
@@ -121,4 +158,8 @@ a {
   border-color: var(--accent);
   background: var(--accent);
   color: white;
+}
+
+.f1-track-theme .f1-pill-active:hover {
+  background: var(--accent-dark);
 }

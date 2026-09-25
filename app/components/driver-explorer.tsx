@@ -83,16 +83,16 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
   }
 
   return (
-    <div className="rounded border border-black/10 bg-white" id="pilotos">
+    <div className="f1-card overflow-hidden rounded" id="pilotos">
       <div className="border-b border-black/10 p-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#e10600]">
+            <p className="f1-eyebrow">
               Campeonato
             </p>
-            <h2 className="mt-2 text-3xl font-black">Pilotos</h2>
+            <h2 className="f1-section-heading mt-2 text-3xl">Pilotos</h2>
           </div>
-          <span className="rounded bg-[#f5f2ec] px-3 py-2 text-sm font-bold text-black/60">
+          <span className="rounded bg-[#f7f5ef] px-3 py-2 text-sm font-bold text-black/60">
             Dados de exemplo
           </span>
         </div>
@@ -101,7 +101,7 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
           <label className="grid gap-2 text-sm font-bold text-black/58">
             Buscar
             <input
-              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600]"
+              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600] focus:ring-4 focus:ring-[#e10600]/10"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Piloto, equipe ou pais"
               type="search"
@@ -112,7 +112,7 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
           <label className="grid gap-2 text-sm font-bold text-black/58">
             Equipe
             <select
-              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600]"
+              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600] focus:ring-4 focus:ring-[#e10600]/10"
               onChange={(event) => setTeam(event.target.value)}
               value={team}
             >
@@ -128,7 +128,7 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
           <label className="grid gap-2 text-sm font-bold text-black/58">
             Ordenar
             <select
-              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600]"
+              className="h-11 rounded border border-black/15 bg-white px-3 text-base font-semibold text-black outline-none transition focus:border-[#e10600] focus:ring-4 focus:ring-[#e10600]/10"
               onChange={(event) => setSortKey(event.target.value as SortKey)}
               value={sortKey}
             >
@@ -157,63 +157,139 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_300px]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
-            <thead className="bg-[#f7f7f7] text-xs uppercase tracking-[0.14em] text-black/45">
-              <tr>
-                <th className="px-5 py-4">Pos</th>
-                <th className="px-5 py-4">Piloto</th>
-                <th className="px-5 py-4">Equipe</th>
-                <th className="px-5 py-4">Pts</th>
-                <th className="px-5 py-4">Vitorias</th>
-                <th className="px-5 py-4">Forma</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDrivers.map((driver) => (
-                <tr className="border-t border-black/8 transition hover:bg-[#fff8ed]" key={driver.slug}>
-                  <td className="px-5 py-4 text-xl font-black">
-                    {driver.position}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        aria-label={
-                          favoriteSlugs.includes(driver.slug)
-                            ? `Remover ${driver.name} dos favoritos`
-                            : `Favoritar ${driver.name}`
-                        }
-                        className="grid size-8 place-items-center rounded border border-black/10 text-sm font-black transition hover:border-[#e10600]"
-                        onClick={() => toggleFavorite(driver.slug)}
-                        type="button"
-                      >
-                        {favoriteSlugs.includes(driver.slug) ? "OK" : "+"}
-                      </button>
-                      <button
-                        className="text-left"
-                        onClick={() => setSelectedSlug(driver.slug)}
-                        type="button"
-                      >
-                        <span className="block font-black">{driver.name}</span>
-                        <span className="block text-sm text-black/48">
-                          {driver.country} / #{driver.number}
-                        </span>
-                      </button>
+      {selectedDriver ? (
+        <aside className="f1-dark-card border-b border-black/10 p-5 text-white">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
+            <div className="min-w-0">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#ffcc00]">
+                Piloto selecionado
+              </p>
+              <h3 className="mt-2 break-words text-3xl font-black sm:text-4xl">
+                {selectedDriver.name}
+              </h3>
+              <p className="mt-1 text-sm font-semibold text-white/58">
+                {selectedDriver.team} / {selectedDriver.country} / #{selectedDriver.number}
+              </p>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-white/62">
+                {selectedDriver.summary}
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
+                <StatTile label="Pontos" value={selectedDriver.points} />
+                <StatTile label="Vitorias" value={selectedDriver.wins} />
+                <StatTile label="Podios" value={selectedDriver.podiums} />
+                <StatTile label="Voltas rapidas" value={selectedDriver.fastestLaps} />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm font-bold text-white/62">
+                  <span>Ritmo do campeonato</span>
+                  <span>{selectedDriver.points} pts</span>
+                </div>
+                <div className="h-3 overflow-hidden rounded bg-white/10">
+                  <div
+                    className="h-full rounded bg-[#e10600]"
+                    style={{
+                      width: `${(selectedDriver.points / pointsLeader) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <Link
+                className="inline-flex w-fit rounded bg-white px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#151515] transition hover:bg-[#ffcc00]"
+                href={`/pilotos/${selectedDriver.slug}`}
+              >
+                Ver detalhes
+              </Link>
+            </div>
+          </div>
+        </aside>
+      ) : null}
+
+      <div>
+        <div className="min-w-0">
+          <div className="hidden border-b border-black/10 bg-[#f7f5ef] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-black/45 md:grid md:grid-cols-[64px_minmax(220px,1fr)_minmax(150px,0.8fr)_150px] md:items-center">
+            <span>Pos</span>
+            <span>Piloto</span>
+            <span>Equipe</span>
+            <span className="text-right">Status</span>
+          </div>
+
+          <div className="divide-y divide-black/8">
+            {filteredDrivers.map((driver) => {
+              const isSelected = selectedDriver?.slug === driver.slug;
+              const isFavorite = favoriteSlugs.includes(driver.slug);
+
+              return (
+                <article
+                  className={`grid gap-3 px-4 py-4 transition sm:px-5 md:grid-cols-[64px_minmax(220px,1fr)_minmax(150px,0.8fr)_150px] md:items-center ${
+                    isSelected ? "bg-[#fff8ed]" : "hover:bg-[#fafafa]"
+                  }`}
+                  key={driver.slug}
+                >
+                  <div className="flex items-center justify-between gap-3 md:block">
+                    <span className="text-2xl font-black leading-none">
+                      {driver.position}
+                    </span>
+                    <span className="rounded bg-[#f7f5ef] px-2.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-black/52 md:hidden">
+                      {driver.points} pts
+                    </span>
+                  </div>
+
+                  <div className="flex min-w-0 items-center gap-3">
+                    <button
+                      aria-label={
+                        isFavorite
+                          ? `Remover ${driver.name} dos favoritos`
+                          : `Favoritar ${driver.name}`
+                      }
+                      className={`grid size-9 shrink-0 place-items-center rounded border text-sm font-black transition ${
+                        isFavorite
+                          ? "border-[#e10600] bg-[#e10600] text-white"
+                          : "border-black/10 bg-white text-black hover:border-[#e10600]"
+                      }`}
+                      onClick={() => toggleFavorite(driver.slug)}
+                      type="button"
+                    >
+                      {isFavorite ? "OK" : "+"}
+                    </button>
+                    <button
+                      className="min-w-0 text-left"
+                      onClick={() => setSelectedSlug(driver.slug)}
+                      type="button"
+                    >
+                      <span className="block truncate text-lg font-black leading-tight">
+                        {driver.name}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-black/48">
+                        {driver.country} / #{driver.number}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="min-w-0 text-sm font-semibold text-black/62 md:text-base">
+                    <span className="md:hidden">Equipe: </span>
+                    <span className="break-words">{driver.team}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 md:justify-end">
+                    <div className="hidden text-right md:block">
+                      <p className="text-lg font-black">{driver.points}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/42">
+                        pontos
+                      </p>
                     </div>
-                  </td>
-                  <td className="px-5 py-4 text-black/65">{driver.team}</td>
-                  <td className="px-5 py-4 font-black">{driver.points}</td>
-                  <td className="px-5 py-4">{driver.wins}</td>
-                  <td className="px-5 py-4">
-                    <span className="rounded bg-[#f5f2ec] px-3 py-1 text-sm font-bold">
+                    <span className="rounded bg-[#f7f5ef] px-3 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-black/58">
                       {trendLabel[driver.trend]}
                     </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
 
           {filteredDrivers.length === 0 ? (
             <div className="border-t border-black/10 p-8 text-center text-sm font-bold text-black/55">
@@ -221,50 +297,6 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
             </div>
           ) : null}
         </div>
-
-        {selectedDriver ? (
-          <aside className="border-t border-black/10 bg-[#151515] p-5 text-white lg:border-l lg:border-t-0">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#ffcc00]">
-              Piloto selecionado
-            </p>
-            <h3 className="mt-2 text-3xl font-black">{selectedDriver.name}</h3>
-            <p className="mt-1 text-sm font-semibold text-white/58">
-              {selectedDriver.team} / {selectedDriver.country} / #{selectedDriver.number}
-            </p>
-            <p className="mt-4 text-sm leading-6 text-white/62">
-              {selectedDriver.summary}
-            </p>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <StatTile label="Pontos" value={selectedDriver.points} />
-              <StatTile label="Vitorias" value={selectedDriver.wins} />
-              <StatTile label="Podios" value={selectedDriver.podiums} />
-              <StatTile label="Voltas rapidas" value={selectedDriver.fastestLaps} />
-            </div>
-
-            <div className="mt-6">
-              <div className="mb-2 flex items-center justify-between text-sm font-bold text-white/62">
-                <span>Ritmo do campeonato</span>
-                <span>{selectedDriver.points} pts</span>
-              </div>
-              <div className="h-4 overflow-hidden rounded bg-white/10">
-                <div
-                  className="h-full rounded bg-[#e10600]"
-                  style={{
-                    width: `${(selectedDriver.points / pointsLeader) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <Link
-              className="mt-6 inline-flex rounded bg-white px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#151515] transition hover:bg-[#ffcc00]"
-              href={`/pilotos/${selectedDriver.slug}`}
-            >
-              Ver detalhes
-            </Link>
-          </aside>
-        ) : null}
       </div>
     </div>
   );
@@ -272,7 +304,7 @@ export function DriverExplorer({ drivers, teams }: DriverExplorerProps) {
 
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded bg-white/10 p-4">
+    <div className="rounded bg-white/10 p-4 ring-1 ring-white/10">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/45">
         {label}
       </p>

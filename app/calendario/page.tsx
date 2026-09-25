@@ -41,7 +41,7 @@ export default async function CalendarPage() {
           <div className="grid gap-8 py-12 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.3em] text-[#ffcc00]">
-                {calendar.source === "api" ? "Jolpica F1 API" : "Fallback local"}
+                {calendar.source === "api" ? calendar.sourceLabel : "Fallback local"}
               </p>
               <h1 className="mt-4 text-5xl font-black leading-none sm:text-7xl">
                 Calendario

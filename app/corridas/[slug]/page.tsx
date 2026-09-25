@@ -4,38 +4,51 @@ import { notFound } from "next/navigation";
 import {
   constructors,
   drivers,
-  getRaceBySlug,
   recentResults,
   type QualifyingClassification,
   type RaceClassification,
+  type RaceResult,
 } from "../../data/f1-data";
-import { getRaceDetails } from "../../lib/f1-api";
+import { getCalendarData, getRaceDetails } from "../../lib/f1-api";
 
 type RacePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return recentResults.map((result) => ({
-    slug: result.slug,
-  }));
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const mockSlugs = recentResults.map((result) => result.slug);
+
+  try {
+    const calendar = await getCalendarData();
+    const calendarSlugs = calendar.races
+      .map((race) => race.slug)
+      .filter((slug): slug is string => Boolean(slug));
+
+    return Array.from(new Set([...mockSlugs, ...calendarSlugs])).map((slug) => ({
+      slug,
+    }));
+  } catch {
+    return mockSlugs.map((slug) => ({ slug }));
+  }
 }
 
 export async function generateMetadata({
   params,
 }: RacePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const race = getRaceBySlug(slug);
+  const details = await getRaceDetails(slug);
 
-  if (!race) {
+  if (!details) {
     return {
       title: "Corrida nao encontrada | F1 Stats",
     };
   }
 
   return {
-    title: `${race.race} | F1 Stats`,
-    description: `Resumo e sessoes do ${race.race} no F1 Stats.`,
+    title: `${details.race.race} | F1 Stats`,
+    description: `Resumo e sessoes do ${details.race.race} no F1 Stats.`,
   };
 }
 
@@ -417,7 +430,7 @@ function QualifyingTable({
   );
 }
 
-function getMentionedDrivers(race: NonNullable<ReturnType<typeof getRaceBySlug>>) {
+function getMentionedDrivers(race: RaceResult) {
   return Array.from(
     new Set(
       race.sessions.flatMap((session) => [

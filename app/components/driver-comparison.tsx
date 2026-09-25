@@ -52,11 +52,11 @@ export function DriverComparison({ drivers }: DriverComparisonProps) {
   );
 
   return (
-    <div className="rounded border border-black/10 bg-[#151515] p-5 text-white">
+    <div className="f1-dark-card rounded p-5 text-white">
       <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#ffcc00]">
         Comparativo
       </p>
-      <h2 className="mt-2 text-3xl font-black">Duelo direto</h2>
+      <h2 className="f1-section-heading mt-2 text-3xl">Duelo direto</h2>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <DriverSelect
@@ -124,7 +124,7 @@ function DriverSelect({
     <label className="grid gap-2 text-sm font-bold text-white/62">
       {label}
       <select
-        className="h-11 rounded border border-white/15 bg-[#222] px-3 text-base font-semibold text-white outline-none transition focus:border-[#ffcc00]"
+        className="h-11 rounded border border-white/15 bg-white/10 px-3 text-base font-semibold text-white outline-none transition focus:border-[#ffcc00] focus:ring-4 focus:ring-[#ffcc00]/10"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >
@@ -159,7 +159,7 @@ function CompareBar({
           {left} / {right}
         </span>
       </div>
-      <div className="flex h-4 overflow-hidden rounded bg-white/10">
+      <div className="flex h-3 overflow-hidden rounded bg-white/10 ring-1 ring-white/10">
         <div className="bg-[#ff8700]" style={{ width: `${leftWidth}%` }} />
         <div className="bg-[#e10600]" style={{ width: `${rightWidth}%` }} />
       </div>

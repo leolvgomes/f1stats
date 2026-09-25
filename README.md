@@ -18,8 +18,8 @@ Dashboard em Next.js para acompanhar estatisticas de Formula 1.
 - Detalhe de corrida com resultado, classificacao, sprint e horarios quando a API disponibiliza.
 - Graficos por corrida com pontos por equipe e comparativo grid vs chegada.
 - Layout claro e funcional inspirado na linguagem de resultados da F1 oficial, com topo vermelho/preto, tabelas limpas e cards objetivos.
-- Camada de API com Jolpica F1 e fallback para dados demo locais.
-- Endpoints internos em `/api/f1/dashboard`, `/api/f1/standings`, `/api/f1/schedule`, `/api/f1/search` e `/api/f1/races/[slug]`.
+- Camada de API com OpenF1 e fallback para dados demo locais.
+- Endpoints internos em `/api/f1/dashboard`, `/api/f1/standings`, `/api/f1/schedule`, `/api/f1/search`, `/api/f1/races` e `/api/f1/races/[slug]`.
 - Pagina de calendario completo em `/calendario` com busca e filtros.
 - Secoes de construtores, proximas corridas, ultimos resultados, comparativo e backlog do produto.
 - Dados de exemplo separados em `app/data/f1-data.ts`, prontos para virar uma camada de API.
@@ -45,7 +45,7 @@ rodando antes de executar `npm test`, ou configure `F1_STATS_BASE_URL`.
 
 ## API
 
-O projeto tenta buscar dados reais da Jolpica F1 API. Se a API estiver fora do ar
+O projeto tenta buscar dados reais da OpenF1 API. Se a API estiver fora do ar
 ou o ambiente estiver sem rede, a aplicacao usa os mocks locais automaticamente.
 
 Rotas internas:
@@ -54,10 +54,11 @@ Rotas internas:
 - `/api/f1/standings?season=current`
 - `/api/f1/schedule?season=current`
 - `/api/f1/search?season=current`
+- `/api/f1/races?season=current`
 - `/api/f1/races/azerbaijan-gp?season=current`
 
 ## Proximos passos
 
-1. Adicionar testes unitarios para mapeadores da Jolpica quando um runner dedicado entrar no projeto.
+1. Adicionar testes unitarios para mapeadores da OpenF1 quando um runner dedicado entrar no projeto.
 2. Criar tela de comparacao por circuito.
 3. Preparar deploy.
